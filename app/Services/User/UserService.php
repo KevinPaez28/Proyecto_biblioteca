@@ -4,6 +4,8 @@ namespace App\Services\User;
 
 use App\Models\User\User;
 use App\Models\Perfiles\Perfiles;
+use Exception;
+use Illuminate\Support\Facades\DB;
 
 class UserService
 {
@@ -74,6 +76,46 @@ class UserService
             "data" => $data
         ];
     }
+    public function updateUser(array $data, $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Buscar el programa
+            $user = User::find($id);
+
+            if (!$user) {
+                return [
+                    "error" => true,
+                    "code" => 404,
+                    "message" => "El usuario no existe",
+                ];
+            }
+
+            $user->update([
+                'document' => $data['documento'],
+                'status_id' => $data['estado_id'],
+            ]);
+            //hace commit
+            DB::commit();
+
+            return [
+                "error" => false,
+                "code" => 200,
+                "message" => "Usuario actualizado con éxito",
+                "data" => $user
+            ];
+        } catch (Exception $e) {
+            //si genero error devuelve a la ultimo cambio de base de datos
+            DB::rollback();
+            return [
+                "error" => true,
+                "code" => 500,
+                "message" => "Ocurrió un error al actualizar el usuario",
+            ];
+        }
+    }
+
     public function deleteCity($id)
     {
         $Users = User::find($id);

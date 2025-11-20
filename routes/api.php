@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Ficha\FichaController;
 use App\Http\Controllers\Api\Program\ProgramController;
 use App\Http\Controllers\Api\User\UserController;
 use Illuminate\Http\Request;
@@ -10,22 +11,25 @@ Route::get('/prueba', function (Request $request) {
 })->middleware('throttle:2,1');
 
 Route::prefix('User')->group(function () {
-    Route::get('/', [UserController::class,'getAll']);
-    Route::get('/search', [UserController::class,'getByinformation']);
-    Route::post('/create', [UserController::class,'create']);
-    Route::post('{id}', [UserController::class,'update']);
-    Route::delete('/delete/{id}', [UserController::class,'delete']);
+    Route::get('/', [UserController::class, 'getAll']);
+    Route::get('/search', [UserController::class, 'getByinformation']);
+    Route::post('/create', [UserController::class, 'create']);
+    Route::patch('/{id}', [UserController::class, 'update']);
+    Route::delete('/delete/{id}', [UserController::class, 'delete']);
 });
 
 
 Route::prefix('Programa')->group(function () {
-    Route::get('/', [ProgramController::class,'getAll']);
-    Route::post('/create', [ProgramController::class,'create']);
-    Route::patch('/{id}', [ProgramController::class,'update']);
-    Route::delete('/delete/{id}', [ProgramController::class,'delete']);
+    Route::get('/', [ProgramController::class, 'getAll']);
+    Route::post('/create', [ProgramController::class, 'create']);
+    Route::patch('/{id}', [ProgramController::class, 'update']);
+    Route::delete('/delete/{id}', [ProgramController::class, 'delete']);
 });
 
 
 Route::prefix('ficha')->group(function () {
-    // Route::post('/create', [FichaController::class,'store']);
+    Route::get('/', [FichaController::class, 'getAll']);
+    Route::post('/create', [FichaController::class, 'createficha']);
+    Route::patch('/{id}', [FichaController::class, 'updateficha']);
+    Route::delete('/delete/{id}', [FichaController::class, 'deleteficha']);
 });

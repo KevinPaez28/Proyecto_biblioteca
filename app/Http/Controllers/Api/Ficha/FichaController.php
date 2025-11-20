@@ -1,27 +1,27 @@
 <?php
 
-namespace App\Http\Controllers\Api\User;
+namespace App\Http\Controllers\Api\Ficha;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\User\updateRequest;
-use App\Http\Requests\User\UserRequest;
-use App\Services\User\UserService;
+use App\Http\Requests\Ficha\createFicha;
+use App\Http\Requests\Ficha\updateFicha;
+use App\Services\Ficha\FichaServices;
 use Illuminate\Http\Request;
 
-class UserController extends Controller
+class FichaController extends Controller
 {
-    protected $userService;
+    protected $FichaServices;
 
-    public function __construct(UserService $userservice)
+
+    public function __construct(FichaServices $fichaservices)
     {
-
-        $this->userService = $userservice;
+        $this->FichaServices = $fichaservices;
     }
 
     public function getAll()
     {
-        $response = $this->userService->getUser();
+        $response = $this->FichaServices->getfichas();
 
 
         if ($response['error'])
@@ -29,45 +29,32 @@ class UserController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-
-    public function getByinformation()
-    {
-
-        $response = $this->userService->getAllInformation();
-
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
-
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
-    }
-
-    public function create(UserRequest $request)
-    {
-
-        $data = $request->validated();
-
-        $response = $this->userService->CreateUser($data);
-
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
-
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
-    }
-    public function update(updateRequest $request, string $id)
+    public function createficha(createFicha $request)
     {
         $data = $request->validated();
 
-        $response = $this->userService->updateUser($data, $id);
+        $response = $this->FichaServices->Createfichas($data);
+
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-
-    public function delete(string $id)
+    public function updateficha(updateFicha $request, string $id)
     {
-        $response = $this->userService->deleteCity($id);
+        $data = $request->validated();
+
+        $response = $this->FichaServices->updateficha($data, $id);
+
+        if ($response['error'])
+            return ResponseFormatter::error($response['message'], $response['code']);
+
+        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+    }
+    public function deleteficha(string $id)
+    {
+        $response = $this->FichaServices->deleteficha($id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
