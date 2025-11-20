@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Models\Perfiles;
+namespace App\Models\Profiles;
 
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Model;
 
 class Profiles extends Model
 {
-    protected $fillable = ['user_id', 'name', 'last_name', 'phone', 'email', 'ficha_id'];
+    protected $fillable = ['usuario_id', 'name', 'last_name', 'phone', 'email', 'ficha_id'];
 
 
     public function user()
