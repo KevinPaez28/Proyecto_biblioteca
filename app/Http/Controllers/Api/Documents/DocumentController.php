@@ -1,28 +1,27 @@
 <?php
 
-namespace App\Http\Controllers\Api\Profile;
+namespace App\Http\Controllers\Api\Documents;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Profile\createProfile;
-use App\Http\Requests\Profile\updateProfile;
-use App\Services\Profile\ProfileServices;
+use App\Http\Requests\Document\createDocument;
+use App\Http\Requests\Document\updateDocument;
+use App\Services\Document\DocumentServices;
 use Illuminate\Http\Request;
 
-class ProfileController extends Controller
+class DocumentController extends Controller
 {
+    protected $DocumentServices;
 
-    protected $ProfileServices;
 
-
-    public function __construct(ProfileServices $profileServices)
+    public function __construct(DocumentServices $documentservices)
     {
-        $this->ProfileServices = $profileServices;
+        $this->DocumentServices = $documentservices;
     }
 
     public function getAll()
     {
-        $response = $this->ProfileServices->getProfiles();
+        $response = $this->DocumentServices->getDocument();
 
 
         if ($response['error'])
@@ -30,11 +29,12 @@ class ProfileController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function create(createProfile $request)
+
+    public function create(createDocument $request)
     {
         $data = $request->validated();
 
-        $response = $this->ProfileServices->createprofiles($data);
+        $response = $this->DocumentServices->createdocument($data);
 
 
         if ($response['error'])
@@ -42,11 +42,11 @@ class ProfileController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function update(updateProfile $request, string $id)
+    public function update(updateDocument $request, string $id)
     {
         $data = $request->validated();
 
-        $response = $this->ProfileServices->updateProfiles($data, $id);
+        $response = $this->DocumentServices->updateDocument($data, $id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
@@ -55,7 +55,7 @@ class ProfileController extends Controller
     }
     public function delete(string $id)
     {
-        $response = $this->ProfileServices->deleteprofile($id);
+        $response = $this->DocumentServices->deleteDocument($id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);

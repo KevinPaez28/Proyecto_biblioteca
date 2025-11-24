@@ -29,7 +29,7 @@ class FichaController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function createficha(createFicha $request)
+    public function create(createFicha $request)
     {
         $data = $request->validated();
 
@@ -41,7 +41,7 @@ class FichaController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function updateficha(updateFicha $request, string $id)
+    public function update(updateFicha $request, string $id)
     {
         $data = $request->validated();
 
@@ -52,7 +52,7 @@ class FichaController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function deleteficha(string $id)
+    public function delete(string $id)
     {
         $response = $this->FichaServices->deleteficha($id);
 

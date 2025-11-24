@@ -11,19 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ficha', function (Blueprint $table) {
-            $table->id();
-            $table->string('ficha');
-            $table->foreignId('program_id')->constrained('program');
+        Schema::create('documents', function (Blueprint $table) {
+            $table->id(); 
+            $table->foreignId('users_id')->constrained('users');
+            $table->string('title');
+            $table->string('path'); 
+            $table->string('extension'); 
+            $table->string('type'); 
+            $table->string('size'); 
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('ficha');
+        Schema::dropIfExists('documents');
     }
 };

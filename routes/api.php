@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Documents\DocumentController;
 use App\Http\Controllers\Api\Ficha\FichaController;
 use App\Http\Controllers\Api\Profile\ProfileController;
 use App\Http\Controllers\Api\Program\ProgramController;
@@ -11,9 +12,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/prueba', function (Request $request) {
     return response()->json(['message' => 'La API está funcionando correctamente.'], 200);
 })->middleware('throttle:2,1');
-
+//ruta para el login
 Route::post('/login', [AuthController::class, 'login']);
 
+//crud de usuarios
 Route::prefix('User')->group(function () {
     Route::get('/', [UserController::class, 'getAll']);
     Route::get('/search', [UserController::class, 'getByinformation']);
@@ -22,7 +24,7 @@ Route::prefix('User')->group(function () {
     Route::delete('/delete/{id}', [UserController::class, 'delete']);
 });
 
-
+//crud de programas
 Route::prefix('Programa')->group(function () {
     Route::get('/', [ProgramController::class, 'getAll']);
     Route::post('/create', [ProgramController::class, 'create']);
@@ -30,17 +32,27 @@ Route::prefix('Programa')->group(function () {
     Route::delete('/delete/{id}', [ProgramController::class, 'delete']);
 });
 
+//crud de perfiles
 Route::prefix('perfil')->group(function () {
-    Route::get('/', [ProfileController::class, 'getAll']);
-    Route::post('/create', [ProfileController::class, 'createficha']);
-    Route::patch('/{id}', [ProfileController::class, 'updateficha']);
-    Route::delete('/delete/{id}', [ProfileController::class, 'deleteficha']);
+    Route::get('/', [ProfileController::class,'getAll']);
+    Route::post('/create', [ProfileController::class,'create']);
+    Route::patch('/{id}', [ProfileController::class,'update']);
+    Route::delete('/delete/{id}', [ProfileController::class,'delete']);
 });
 
 
+//crud de fichas
 Route::prefix('ficha')->group(function () {
     Route::get('/', [FichaController::class, 'getAll']);
-    Route::post('/create', [FichaController::class, 'createficha']);
-    Route::patch('/{id}', [FichaController::class, 'updateficha']);
-    Route::delete('/delete/{id}', [FichaController::class, 'deleteficha']);
+    Route::post('/create', [FichaController::class, 'create']);
+    Route::patch('/{id}', [FichaController::class, 'update']);
+    Route::delete('/delete/{id}', [FichaController::class, 'delete']);
+});
+
+//Crud de documentos
+Route::prefix('documento')->group(function () {
+    Route::get('/', [DocumentController::class, 'getAll']);
+    Route::post('/create', [DocumentController::class, 'create']);
+    Route::patch('/{id}', [DocumentController::class, 'update']);
+    Route::delete('/delete/{id}', [DocumentController::class, 'delete']);
 });

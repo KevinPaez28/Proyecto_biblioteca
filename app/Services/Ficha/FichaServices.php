@@ -38,7 +38,7 @@ class FichaServices
         return [
             'error' => false,
             'code' => 201,
-            'message' => 'ficha creado con éxito',
+            'message' => 'Ficha creado con éxito',
             'data' => $ficha,
         ];
     }
@@ -55,7 +55,7 @@ class FichaServices
                 return [
                     "error" => true,
                     "code" => 404,
-                    "message" => "El ficha no existe",
+                    "message" => "La ficha no existe",
                 ];
             }
 
@@ -69,7 +69,7 @@ class FichaServices
             return [
                 "error" => false,
                 "code" => 200,
-                "message" => "ficha actualizado con éxito",
+                "message" => "Ficha actualizada con éxito",
                 "data" => $ficha
             ];
         } catch (Exception $e) {
@@ -78,7 +78,7 @@ class FichaServices
             return [
                 "error" => true,
                 "code" => 500,
-                "message" => "Ocurrió un error al actualizar el ficha",
+                "message" => "Ocurrió un error al actualizar la ficha",
             ];
         }
     }
@@ -92,7 +92,7 @@ class FichaServices
             return [
                 "error" => true,
                 "code" => 404,
-                "message" => "El ficha no existe",
+                "message" => "La ficha no existe",
             ];
 
         $ficha->delete();
@@ -100,7 +100,7 @@ class FichaServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "ficha eliminado con éxito",
+            "message" => "Ficha eliminado con éxito",
         ];
     }
 }
