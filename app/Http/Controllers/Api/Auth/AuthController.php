@@ -2,40 +2,76 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Models\User\User;
+use App\Http\Requests\Auth\loginRequest;
+use App\Services\Auth\AuthServices;
 use Illuminate\Http\Request;
+use App\Models\User\User;
+
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    protected $authService;
+
+    public function __construct(AuthServices $authService)
     {
-        // Validar datos
-        $request->validate([
-            'document' => 'required|string',
-            'password' => 'required|string'
-        ]);
+        $this->authService = $authService;
+    }
 
-        // Intentar autenticación
-        if (!Auth::attempt($request->only('document', 'password'))) {
-            return response()->json([
-                'error' => true,
-                'message' => 'Credenciales incorrectas'
-            ], 401);
-        }
 
-        // Obtener usuario autenticado
-        $user = User::where('document', $request->document)->first();
+    public function login(loginRequest $request)
+    {
+        $credentials = $request->validated();
 
-        // Generar token
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $result = $this->authService->login($credentials);
+
+        if ($result['error'])
+
+            return ResponseFormatter::error($result['message'], $result['code']);
+
+
+        $cookieToken = $result['data']['cookieToken'];
+        $cookieRefresh = $result['data']['cookieRefreshToken'];
+
+        return ResponseFormatter::success(
+            $result['message'],
+            $result['code'],
+            array_diff_key($result['data'], array_flip(['cookieToken', 'cookieRefreshToken',]))
+        )->cookie($cookieToken)
+            ->cookie($cookieRefresh);
+    }
+
+    public function refreshToken(Request $request)
+    {
+        $user = Auth::user();
+
+        $currentRefreshToken = $request->bearerToken();
+
+        $result = $this->authService->refreshToken($currentRefreshToken, $user);
 
         return response()->json([
-            'error' => false,
-            'message' => 'Login exitoso',
-            'access_token' => $token,
-            'token_type' => 'Bearer'
-        ]);
+            'success' => true,
+            'message' => 'Token refrescado exitosamente',
+            'data' => []
+        ])->cookie($result['cookieToken'])
+            ->cookie($result['cookieRefreshToken']);
+    }
+
+    public function logOut(Request $request)
+    {
+        $user = Auth::user();
+
+        $expiredCookies = $this->authService->createExpiredCookies();
+
+        $result = $this->authService->logOut($user);
+
+        return ResponseFormatter::success(
+            $result['message'],
+            $result['code'],
+            $result['data']
+        )->cookie($expiredCookies['expiredAccessToken'])
+            ->cookie($expiredCookies['expiredRefreshToken']);
     }
 }

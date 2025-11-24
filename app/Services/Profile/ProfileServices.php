@@ -24,7 +24,7 @@ class ProfileServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Perfiles obtenidos con éxito",
+            "message" => "Perfil obtenido con éxito",
             "data" => $Profile
         ];
     }
@@ -42,7 +42,7 @@ class ProfileServices
         return [
             'error' => false,
             'code' => 201,
-            'message' => 'Perfiles creado con éxito',
+            'message' => 'Perfil creado con éxito',
             'data' => $Profile,
         ];
     }
@@ -59,7 +59,7 @@ class ProfileServices
                 return [
                     "error" => true,
                     "code" => 404,
-                    "message" => "El perfiles no existe",
+                    "message" => "El perfil no existe",
                 ];
             }
 
@@ -77,7 +77,7 @@ class ProfileServices
             return [
                 "error" => false,
                 "code" => 200,
-                "message" => "perfiles actualizado con éxito",
+                "message" => "perfil actualizado con éxito",
                 "data" => $Profile
             ];
         } catch (Exception $e) {
@@ -86,7 +86,7 @@ class ProfileServices
             return [
                 "error" => true,
                 "code" => 500,
-                "message" => "Ocurrió un error al actualizar el perfiles",
+                "message" => "Ocurrió un error al actualizar el perfil",
             ];
         }
     }
@@ -100,7 +100,7 @@ class ProfileServices
             return [
                 "error" => true,
                 "code" => 404,
-                "message" => "El perfiles no existe",
+                "message" => "El perfil no existe",
             ];
 
         $Profile->delete();
@@ -108,7 +108,7 @@ class ProfileServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Perfiles eliminado con éxito",
+            "message" => "Perfil eliminado con éxito",
         ];
     }
 }

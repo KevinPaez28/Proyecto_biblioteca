@@ -11,7 +11,7 @@ class createProfile extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Permitir acceso
+        return true; 
     }
 
     /**

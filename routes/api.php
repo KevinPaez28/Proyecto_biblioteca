@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/prueba', function (Request $request) {
     return response()->json(['message' => 'La API está funcionando correctamente.'], 200);
 })->middleware('throttle:2,1');
+
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::prefix('User')->group(function () {
