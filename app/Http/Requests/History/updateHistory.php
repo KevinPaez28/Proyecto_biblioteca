@@ -25,7 +25,7 @@ class updateHistory extends FormRequest
         $historyId = $this->route('id');
 
         return [
-            'usuario_id'    => "required|integer|exists:users,id",
+            'usuario_id'    => "required|integer|exists:users,{$historyId}",
             'accion'     => "required|integer|exists:actions,id",
             'descripcion'   => "required|string|",
             'modelo_id'     => "required|integer",

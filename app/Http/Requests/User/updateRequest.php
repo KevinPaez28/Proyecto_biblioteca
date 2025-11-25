@@ -25,7 +25,7 @@ class updateRequest extends FormRequest
 
         return [
             'documento' => "required|string|max:10|unique:users,document,{$userId}",
-            'estado_id' => 'required|integer',
+            'estado_id' => 'required|integer'
         ];
     }
 

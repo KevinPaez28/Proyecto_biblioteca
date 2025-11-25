@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\Ficha\FichaController;
 use App\Http\Controllers\Api\History\HistoryController;
 use App\Http\Controllers\Api\Profile\ProfileController;
 use App\Http\Controllers\Api\Program\ProgramController;
+use App\Http\Controllers\Api\Schedules\SchedulesController;
+use App\Http\Controllers\Api\Shifts\ShiftsController;
 use App\Http\Controllers\Api\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -72,4 +74,18 @@ Route::prefix('history')->group(function () {
     Route::post('/create', [HistoryController::class, 'create']);
     Route::patch('/{id}', [HistoryController::class, 'update']);
     Route::delete('/delete/{id}', [HistoryController::class, 'delete']);
+});
+
+Route::prefix('horarios')->group(function () {
+    Route::get('/', [SchedulesController::class, 'getAll']);
+    Route::post('/create', [SchedulesController::class, 'create']);
+    Route::patch('/{id}', [SchedulesController::class, 'update']);
+    Route::delete('/delete/{id}', [SchedulesController::class, 'delete']);
+});
+
+Route::prefix('jornadas')->group(function () {
+    Route::get('/', [ShiftsController::class, 'getAll']);
+    Route::post('/create', [ShiftsController::class, 'create']);
+    Route::patch('/{id}', [ShiftsController::class, 'update']);
+    Route::delete('/delete/{id}', [ShiftsController::class, 'delete']);
 });
