@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\Actions_Historys\ActionsController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Documents\DocumentController;
 use App\Http\Controllers\Api\Ficha\FichaController;
+use App\Http\Controllers\Api\History\HistoryController;
 use App\Http\Controllers\Api\Profile\ProfileController;
 use App\Http\Controllers\Api\Program\ProgramController;
 use App\Http\Controllers\Api\User\UserController;
@@ -16,7 +18,7 @@ Route::get('/prueba', function (Request $request) {
 Route::post('/login', [AuthController::class, 'login']);
 
 //crud de usuarios
-Route::prefix('User')->group(function () {
+Route::prefix('user')->group(function () {
     Route::get('/', [UserController::class, 'getAll']);
     Route::get('/search', [UserController::class, 'getByinformation']);
     Route::post('/create', [UserController::class, 'create']);
@@ -25,7 +27,7 @@ Route::prefix('User')->group(function () {
 });
 
 //crud de programas
-Route::prefix('Programa')->group(function () {
+Route::prefix('programa')->group(function () {
     Route::get('/', [ProgramController::class, 'getAll']);
     Route::post('/create', [ProgramController::class, 'create']);
     Route::patch('/{id}', [ProgramController::class, 'update']);
@@ -55,4 +57,19 @@ Route::prefix('documento')->group(function () {
     Route::post('/create', [DocumentController::class, 'create']);
     Route::patch('/{id}', [DocumentController::class, 'update']);
     Route::delete('/delete/{id}', [DocumentController::class, 'delete']);
+});
+
+//crud de 
+Route::prefix('actions')->group(function () {
+    Route::get('/', [ActionsController::class, 'getAll']);
+    Route::post('/create', [ActionsController::class, 'create']);
+    Route::patch('/{id}', [ActionsController::class, 'update']);
+    Route::delete('/delete/{id}', [ActionsController::class, 'delete']);
+});
+
+Route::prefix('history')->group(function () {
+    Route::get('/', [HistoryController::class, 'getAll']);
+    Route::post('/create', [HistoryController::class, 'create']);
+    Route::patch('/{id}', [HistoryController::class, 'update']);
+    Route::delete('/delete/{id}', [HistoryController::class, 'delete']);
 });

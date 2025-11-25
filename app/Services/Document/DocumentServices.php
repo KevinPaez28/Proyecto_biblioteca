@@ -31,25 +31,25 @@ class DocumentServices
     public function CreateDocument(array $data)
     {
 
-        $document = Documents::Create([
-            'users_id' => $data['users_id'],
-            'title' => $data['titulo'],
-            'path' => $data['ruta'],
-            'extension' => $data['extension'],
-            'type' => $data['tipo'],
-            'size' => $data['tamano'],
-        ]);
-        if ($request->hasFile('document')) {
-            $file = $request->file('document');
-            $path = \Storage::disk('public')->putFile('Documents', $document);
-        }
+        // $document = Documents::Create([
+        //     'users_id' => $data['users_id'],
+        //     'title' => $data['titulo'],
+        //     'path' => $data['ruta'],
+        //     'extension' => $data['extension'],
+        //     'type' => $data['tipo'],
+        //     'size' => $data['tamano'],
+        // ]);
+        // if ($request->hasFile('document')) {
+        //     $file = $request->file('document');
+        //     $path = \Storage::disk('public')->putFile('Documents', $document);
+        // }
 
-        return [
-            'error' => false,
-            'code' => 201,
-            'message' => 'Documento creado con éxito',
-            'data' => $document,
-        ];
+        // return [
+        //     'error' => false,
+        //     'code' => 201,
+        //     'message' => 'Documento creado con éxito',
+        //     'data' => $document,
+        // ];
     }
 
     public function updateDocument(array $data, $id)

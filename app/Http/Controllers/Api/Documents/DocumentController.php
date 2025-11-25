@@ -30,18 +30,18 @@ class DocumentController extends Controller
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
-    public function create(createDocument $request)
-    {
-        $data = $request->validated();
+    // public function create(createDocument $request)
+    // {
+    //     $data = $request->validated();
 
-        $response = $this->DocumentServices->createdocument($data);
+    //     $response = $this->DocumentServices->createdocument($data);
 
 
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
+    //     if ($response['error'])
+    //         return ResponseFormatter::error($response['message'], $response['code']);
 
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
-    }
+    //     return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+    // }
     public function update(updateDocument $request, string $id)
     {
         $data = $request->validated();
