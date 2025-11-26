@@ -31,7 +31,7 @@ class ShiftServices
     public function CreateShifts(array $data)
     {
         $Shifts = Shifts::Create(attributes: [
-            'name' => $data['nombreGJU¿'],
+            'name' => $data['nombre'],
             'schedules_id' => $data['horario_id'],
 
         ]);
