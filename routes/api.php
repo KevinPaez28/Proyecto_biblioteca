@@ -7,9 +7,11 @@ use App\Http\Controllers\Api\Ficha\FichaController;
 use App\Http\Controllers\Api\History\HistoryController;
 use App\Http\Controllers\Api\Profile\ProfileController;
 use App\Http\Controllers\Api\Program\ProgramController;
+use App\Http\Controllers\Api\Reason\ReasonController;
 use App\Http\Controllers\Api\Reason_estates\estatesController;
 use App\Http\Controllers\Api\Schedules\SchedulesController;
 use App\Http\Controllers\Api\Shifts\ShiftsController;
+use App\Http\Controllers\Api\state_events\stateEventsController;
 use App\Http\Controllers\Api\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -91,12 +93,34 @@ Route::prefix('jornadas')->group(function () {
     Route::delete('/delete/{id}', [ShiftsController::class, 'delete']);
 });
 
-Route::prefix('estados')->group(function () {
+Route::prefix('estadosMotivos')->group(function () {
     Route::get('/', [estatesController::class, 'getAll']);
     Route::post('/create', [estatesController::class, 'create']);
     Route::patch('/{id}', [estatesController::class, 'update']);
     Route::delete('/delete/{id}', [estatesController::class, 'delete']);
+});
+
+Route::prefix('motivos')->group(function () {
+    Route::get('/', [ReasonController::class, 'getAll']);
+    Route::post('/create', [ReasonController::class, 'create']);
+    Route::patch('/{id}', [ReasonController::class, 'update']);
+    Route::delete('/delete/{id}', [ReasonController::class, 'delete']);
 });   
+
+Route::prefix('EstadosEventos')->group(function () {
+    Route::get('/', [stateEventsController::class, 'getAll']);
+    Route::post('/create', [stateEventsController::class, 'create']);
+    Route::patch('/{id}', [stateEventsController::class, 'update']);
+    Route::delete('/delete/{id}', [stateEventsController::class, 'delete']);
+}); 
+
+Route::prefix('Salas')->group(function () {
+    Route::get('/', [stateEventsController::class, 'getAll']);
+    Route::post('/create', [stateEventsController::class, 'create']);
+    Route::patch('/{id}', [stateEventsController::class, 'update']);
+    Route::delete('/delete/{id}', [stateEventsController::class, 'delete']);
+});   
+
 
 
 
