@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/prueba', function (Request $request) {
     return response()->json(['message' => 'La API está funcionando correctamente.'], 200);
 })->middleware('throttle:2,1');
+
+
 //ruta para el login
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -64,7 +66,7 @@ Route::prefix('documento')->group(function () {
     Route::get('/', [DocumentController::class, 'getAll']);
     Route::post('/create', [DocumentController::class, 'create']);
     Route::patch('/{id}', [DocumentController::class, 'update']);
-    Route::delete('/delete/{id}', [DocumentController::class, 'delete']);
+    Route::delete('/delete/{id}', [DocumentController::class, 'de   lete']);
 });
 
 //crud de 
@@ -75,7 +77,7 @@ Route::prefix('actions')->group(function () {
     Route::delete('/delete/{id}', [ActionsController::class, 'delete']);
 });
 
-Route::prefix('history')->group(function () {
+Route::prefix('historial')->group(function () {
     Route::get('/', [HistoryController::class, 'getAll']);
     Route::post('/create', [HistoryController::class, 'create']);
     Route::patch('/{id}', [HistoryController::class, 'update']);

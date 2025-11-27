@@ -23,7 +23,7 @@ class createFicha extends FormRequest
     {
         return [
             'ficha' => 'required|string|unique:ficha,ficha',
-            'programa' =>'required|numeric|exists:program,id'
+            'programa' =>'required|numeric|exists:programs,id'
         ];
     }
 

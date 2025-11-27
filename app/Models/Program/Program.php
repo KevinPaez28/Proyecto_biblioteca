@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notifiable;
 class Program extends Model
 {
     use HasFactory, Notifiable;
-    protected $table = 'program';
+    protected $table = 'programs';
     protected $fillable = ['training_program'];
 
     public function fichas() {

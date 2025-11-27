@@ -16,7 +16,7 @@ class updateFicha extends FormRequest
 
         return [
             'ficha' => "required|string|max:20|unique:ficha,ficha,{$fichaId}",
-            'programa' => 'required|exists:program,id',
+            'programa' => 'required|exists:programs,id',
         ];
     }
 

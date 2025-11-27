@@ -24,7 +24,7 @@ class updateProgram extends FormRequest
         $programId = $this->route('id');
 
         return [
-            'programa_formacion' => "required|string|max:50|unique:program,training_program,{$programId}",
+            'programa_formacion' => "required|string|max:50|unique:programs,training_program,{$programId}",
         ];
     }
     public function messages(): array
