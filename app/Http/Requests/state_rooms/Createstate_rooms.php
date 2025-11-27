@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\state_events;
+namespace App\Http\Requests\state_rooms;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateEventEstates extends FormRequest
+class Createstate_rooms extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

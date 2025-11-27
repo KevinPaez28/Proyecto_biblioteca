@@ -1,38 +1,27 @@
 <?php
 
-namespace App\Http\Controllers\Api\Reason;
+namespace App\Http\Controllers\Api\State_rooms;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Reasons\createReasons;
-use App\Http\Requests\Reasons\updateReasons;
-use App\Services\Reasons\ReasonServices;
+use App\Http\Requests\state_rooms\Createstate_rooms;
+use App\Http\Requests\state_rooms\updatestate_rooms;
+use App\Services\state_rooms\state_roomServices;
 use Illuminate\Http\Request;
 
-class ReasonController extends Controller
+class state_roomsController extends Controller
 {
-    protected $ReasonServices;
+    protected $State_roomServices;
 
-    
-    public function __construct(ReasonServices $Reasonservices)
+
+    public function __construct(state_roomServices $state_roomsServices)
     {
-        $this->ReasonServices = $Reasonservices;
+        $this->State_roomServices = $state_roomsServices;
     }
 
     public function getAll()
     {
-        $response = $this->ReasonServices->getReasons();
-
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
-
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
-    }
-    public function create(createReasons $request)
-    {
-        $data = $request->validated();
-
-        $response = $this->ReasonServices->CreateReasons($data);
+        $response = $this->State_roomServices->getStates();
 
 
         if ($response['error'])
@@ -40,11 +29,23 @@ class ReasonController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function update(updateReasons $request, string $id)
+    public function create(Createstate_rooms $request)
     {
         $data = $request->validated();
 
-        $response = $this->ReasonServices->updateReasons($data, $id);
+        $response = $this->State_roomServices->CreateStates($data);
+
+
+        if ($response['error'])
+            return ResponseFormatter::error($response['message'], $response['code']);
+
+        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+    }
+    public function update(updatestate_rooms $request, string $id)
+    {
+        $data = $request->validated();
+
+        $response = $this->State_roomServices->updateStates($data, $id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
@@ -53,7 +54,7 @@ class ReasonController extends Controller
     }
     public function delete(string $id)
     {
-        $response = $this->ReasonServices->deleteReasons($id);
+        $response = $this->State_roomServices->deleteStates($id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);

@@ -1,38 +1,40 @@
 <?php
 
-namespace App\Http\Controllers\Api\Reason;
+namespace App\Http\Controllers\Api\Events;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Reasons\createReasons;
-use App\Http\Requests\Reasons\updateReasons;
-use App\Services\Reasons\ReasonServices;
+use App\Http\Requests\Reason_estates\createEvents;
+use App\Http\Requests\Reason_estates\updateEvents;
+use App\Http\Requests\Rooms\createRooms;
+use App\Http\Requests\Rooms\updateRooms;
+use App\Services\Events\EventServices;
 use Illuminate\Http\Request;
 
-class ReasonController extends Controller
+class EventController extends Controller
 {
-    protected $ReasonServices;
+    protected $EventServices;
 
-    
-    public function __construct(ReasonServices $Reasonservices)
+
+    public function __construct(EventServices $Eventservices)
     {
-        $this->ReasonServices = $Reasonservices;
+        $this->EventServices = $Eventservices;
     }
 
     public function getAll()
     {
-        $response = $this->ReasonServices->getReasons();
+        $response = $this->EventServices->getEvents();
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function create(createReasons $request)
+    public function create(createEvents $request)
     {
         $data = $request->validated();
 
-        $response = $this->ReasonServices->CreateReasons($data);
+        $response = $this->EventServices->CreateEvents($data);
 
 
         if ($response['error'])
@@ -40,11 +42,11 @@ class ReasonController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function update(updateReasons $request, string $id)
+    public function update(updateEvents $request, string $id)
     {
         $data = $request->validated();
 
-        $response = $this->ReasonServices->updateReasons($data, $id);
+        $response = $this->EventServices->updateEvents($data, $id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
@@ -53,7 +55,7 @@ class ReasonController extends Controller
     }
     public function delete(string $id)
     {
-        $response = $this->ReasonServices->deleteReasons($id);
+        $response = $this->EventServices->deleteEvents($id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);

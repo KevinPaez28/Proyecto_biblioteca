@@ -11,7 +11,7 @@ class updateEventEstates extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,8 +21,18 @@ class updateEventEstates extends FormRequest
      */
     public function rules(): array
     {
+        $Id = $this->route('id'); // ID de la jornada que se actualiza
+
         return [
-            //
+            'nombre' => "required|string|min:3|unique:state_events,id,{$Id}",
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'nombre.required'        => 'El nombre es obligatorio.',
+            'nombre.string'          => 'El nombre debe ser un texto válido.'
         ];
     }
 }

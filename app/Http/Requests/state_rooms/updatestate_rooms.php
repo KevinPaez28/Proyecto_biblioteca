@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\state_events;
+namespace App\Http\Requests\state_rooms;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateEventEstates extends FormRequest
+class updatestate_rooms extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,20 +21,18 @@ class CreateEventEstates extends FormRequest
      */
     public function rules(): array
     {
+        $Id = $this->route('id'); // ID de la jornada que se actualiza
+
         return [
-            'nombre' => 'required|string|max:50'
+            'nombre' => "required|string|min:3|unique:state_rooms,id,{$Id}",
         ];
     }
 
-    /**
-     * Custom messages for validation errors.
-     */
     public function messages(): array
     {
         return [
-            'nombre.required' => 'El nombre es obligatorio.',
-            'nombre.string' => 'El campo debe ser texto.',
-            'nombre.max' => 'El nombre no puede superar los 50 caracteres.',
+            'nombre.required'        => 'El nombre es obligatorio.',
+            'nombre.string'          => 'El nombre debe ser un texto válido.'
         ];
     }
 }

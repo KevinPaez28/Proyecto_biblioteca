@@ -3,15 +3,18 @@
 use App\Http\Controllers\Api\Actions_Historys\ActionsController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Documents\DocumentController;
+use App\Http\Controllers\Api\Events\EventController;
 use App\Http\Controllers\Api\Ficha\FichaController;
 use App\Http\Controllers\Api\History\HistoryController;
 use App\Http\Controllers\Api\Profile\ProfileController;
 use App\Http\Controllers\Api\Program\ProgramController;
 use App\Http\Controllers\Api\Reason\ReasonController;
 use App\Http\Controllers\Api\Reason_estates\estatesController;
+use App\Http\Controllers\Api\Rooms\RoomsController;
 use App\Http\Controllers\Api\Schedules\SchedulesController;
 use App\Http\Controllers\Api\Shifts\ShiftsController;
 use App\Http\Controllers\Api\state_events\stateEventsController;
+use App\Http\Controllers\Api\State_rooms\state_roomsController;
 use App\Http\Controllers\Api\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -114,11 +117,26 @@ Route::prefix('EstadosEventos')->group(function () {
     Route::delete('/delete/{id}', [stateEventsController::class, 'delete']);
 }); 
 
-Route::prefix('Salas')->group(function () {
-    Route::get('/', [stateEventsController::class, 'getAll']);
-    Route::post('/create', [stateEventsController::class, 'create']);
-    Route::patch('/{id}', [stateEventsController::class, 'update']);
-    Route::delete('/delete/{id}', [stateEventsController::class, 'delete']);
+Route::prefix('EstadosSalas')->group(function () {
+    Route::get('/', [state_roomsController::class, 'getAll']);
+    Route::post('/create', [state_roomsController::class, 'create']);
+    Route::patch('/{id}', [state_roomsController::class, 'update']);
+    Route::delete('/delete/{id}', [state_roomsController::class, 'delete']);
+});
+
+Route::prefix('salas')->group(function () {
+    Route::get('/', [RoomsController::class, 'getAll']);
+    Route::post('/create', [RoomsController::class, 'create']);
+    Route::patch('/{id}', action: [RoomsController::class, 'update']);
+    Route::delete('/delete/{id}', [RoomsController::class, 'delete']);
+});
+
+
+Route::prefix('eventos')->group(function () {
+    Route::get('/', [EventController::class, 'getAll']);
+    Route::post('/create', [EventController::class, 'create']);
+    Route::patch('/{id}', action: [EventController::class, 'update']);
+    Route::delete('/delete/{id}', [RoomsController::class, 'delete']);
 });   
 
 
