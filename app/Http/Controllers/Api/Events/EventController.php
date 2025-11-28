@@ -4,12 +4,9 @@ namespace App\Http\Controllers\Api\Events;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Reason_estates\createEvents;
-use App\Http\Requests\Reason_estates\updateEvents;
-use App\Http\Requests\Rooms\createRooms;
-use App\Http\Requests\Rooms\updateRooms;
+use App\Http\Requests\Events\createEvent;
+use App\Http\Requests\Events\updateEvent;
 use App\Services\Events\EventServices;
-use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
@@ -30,7 +27,7 @@ class EventController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function create(createEvents $request)
+    public function create(createEvent $request)
     {
         $data = $request->validated();
 
@@ -42,7 +39,7 @@ class EventController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function update(updateEvents $request, string $id)
+    public function update(updateEvent $request, string $id)
     {
         $data = $request->validated();
 

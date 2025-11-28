@@ -1,28 +1,38 @@
 <?php
 
-namespace App\Http\Controllers\Api\states_rooms;
+namespace App\Http\Controllers\Api\assistances;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Reason_estates\createStates;
-use App\Http\Requests\state_rooms\Createstate_rooms;
-use App\Http\Requests\state_rooms\updatestate_rooms;
-use App\Services\states_rooms\statesroomServices;
+use App\Http\Requests\assistances\createAssistances;
+use App\Http\Requests\assistances\updateAssistances;
+use App\Services\assitances\assitanceServices;
 use Illuminate\Http\Request;
 
-class StatesRoomsController extends Controller
+class assitancesController extends Controller
 {
-    protected $State_roomServices;
+    protected $assitancesServices;
 
 
-    public function __construct(statesroomServices $state_roomsServices)
+    public function __construct(assitanceServices $assistancesservices)
     {
-        $this->State_roomServices = $state_roomsServices;
+        $this->assitancesServices = $assistancesservices;
     }
 
     public function getAll()
     {
-        $response = $this->State_roomServices->getStates();
+        $response = $this->assitancesServices->getAssistances();
+
+        if ($response['error'])
+            return ResponseFormatter::error($response['message'], $response['code']);
+
+        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+    }
+    public function create(createAssistances $request)
+    {
+        $data = $request->validated();
+
+        $response = $this->assitancesServices->CreateAssistances($data);
 
 
         if ($response['error'])
@@ -30,23 +40,11 @@ class StatesRoomsController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function create(Createstate_rooms $request)
+    public function update(updateAssistances $request, string $id)
     {
         $data = $request->validated();
 
-        $response = $this->State_roomServices->CreateStates($data);
-
-
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
-
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
-    }
-    public function update(updatestate_rooms $request, string $id)
-    {
-        $data = $request->validated();
-
-        $response = $this->State_roomServices->updateStates($data, $id);
+        $response = $this->assitancesServices->updateAssistances($data, $id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
@@ -55,7 +53,7 @@ class StatesRoomsController extends Controller
     }
     public function delete(string $id)
     {
-        $response = $this->State_roomServices->deleteStates($id);
+        $response = $this->assitancesServices->deleteAssistances($id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);

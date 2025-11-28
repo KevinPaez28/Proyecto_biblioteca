@@ -27,6 +27,10 @@ class updateProgram extends FormRequest
             'programa_formacion' => "required|string|max:50|unique:programs,training_program,{$programId}",
         ];
     }
+
+    /**
+     * Mensajes personalizados en español.
+     */
     public function messages(): array
     {
         return [

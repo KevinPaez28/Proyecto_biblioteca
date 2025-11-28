@@ -6,6 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reason_estates extends Model
 {
-    protected $table = "reason_states";
+    protected $table = "states_Reason";
  protected $fillable = ['name'];
 }

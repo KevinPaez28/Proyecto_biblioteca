@@ -32,6 +32,9 @@ class state_eventsServices
     {
         $estates = state_events::Create([
             'name' => $data['nombre'],
+            'name' => $data['nombre'],
+            'name' => $data['nombre'],
+
         ]);
 
         return [

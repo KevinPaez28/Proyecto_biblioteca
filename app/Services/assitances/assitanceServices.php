@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Services\Events;
+namespace App\Services\assitances;
 
-use App\Models\Events\events;
+use App\Models\assitances\assitances;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-class EventServices
+class assitanceServices
 {
-   public function getEvents()
+    public function getAssistances()
     {
-        $rooms = events::all();
+        $rooms = assitances::all();
 
         if (count($rooms) == 0)
             return [
                 "error" => false,
                 "code" => 200,
-                "message" => "No hay eventos registrado",
+                "message" => "No hay asistencias registradas",
                 "data" => $rooms
             ];
 
@@ -24,50 +24,48 @@ class EventServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Eventos obtenidos con éxito",
+            "message" => "Asistencias obtenidas con éxito",
             "data" => $rooms
         ];
     }
-    public function CreateEvents(array $data)
+    public function CreateAssistances(array $data)
     {
-        $rooms = events::Create([
-            'name' => $data['nombre'],
-            'mandated' => $data['encargado'],
-            'room_id' => $data['sala_id'],
-            'date' => $data['fecha'],
-            'state_event_id' => $data['estado_id'],
+        echo implode(",", $data);
+        $rooms = assitances::Create([
+            'user_id' => $data['usuario_id'],
+            'working_day_id' => $data['jornada'],
+            'reason_id' => $data['motivo'],
+            'event_id' => $data['evento'],
         ]);
         
         return [
             'error' => false,
             'code' => 201,
-            'message' => 'Eventos creado con éxito',
-            'data' => $rooms,
+            'message' => 'Asistencia creada con éxito',
+            'data' => $data,
         ];
     }
 
-    public function updateEvents(array $data, $id)
+    public function updateAssistances(array $data, $id)
     {
         try {
             DB::beginTransaction();
 
             // Buscar el programa
-            $rooms = events::find($id);
+            $rooms = assitances::find($id);
 
             if (!$rooms) {
                 return [
                     "error" => true,
                     "code" => 404,
-                    "message" => "El evento no existe",
+                    "message" => "La asistencia no existe",
                 ];
             }
 
             $rooms->update([
                 'name' => $data['nombre'],
-                'mandated' => $data['encargado'],
-                'room_id' => $data['sala_id'],
-                'date' => $data['fecha'],
-                'state_event_id' => $data['estado_id'],
+                'description' => $data['descripcion'],
+                'state_room_id' => $data['estado_id'],
             ]);
             //hace commit
             DB::commit();
@@ -75,7 +73,7 @@ class EventServices
             return [
                 "error" => false,
                 "code" => 200,
-                "message" => "evento actualizado con éxito",
+                "message" => "Asistencia actualizada con éxito",
                 "data" => $rooms
             ];
         } catch (Exception $e) {
@@ -84,21 +82,21 @@ class EventServices
             return [
                 "error" => true,
                 "code" => 500,
-                "message" => "Ocurrió un error al actualizar el evento",
+                "message" => "Ocurrió un error al actualizar la asistencia",
             ];
         }
     }
 
-    public function deleteEvents($id)
+    public function deleteAssistances($id)
     {
-        $rooms = events::find($id);
+        $rooms = assitances::find($id);
 
 
         if (!$rooms)
             return [
                 "error" => true,
                 "code" => 404,
-                "message" => "El evento no existe",
+                "message" => "La asistencia no existe",
             ];
 
         $rooms->delete();
@@ -106,7 +104,7 @@ class EventServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Evento eliminado con éxito",
+            "message" => "Asistencia eliminada con éxito",
         ];
     }
 }

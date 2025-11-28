@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Actions_Historys\ActionsController;
+use App\Http\Controllers\Api\assistances\assitancesController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Documents\DocumentController;
 use App\Http\Controllers\Api\Events\EventController;
@@ -100,7 +101,7 @@ Route::prefix('jornadas')->group(function () {
 });
 
 // CRUD Estados Motivos
-Route::prefix('estadosMotivos')->group(function () {
+Route::prefix('estadoMotivos')->group(function () {
     Route::get('/', [estatesController::class, 'getAll']);
     Route::post('/create', [estatesController::class, 'create']);
     Route::patch('/{id}', [estatesController::class, 'update']);
@@ -116,7 +117,7 @@ Route::prefix('motivos')->group(function () {
 });
 
 // CRUD Estados Eventos
-Route::prefix('estadosEventos')->group(function () {
+Route::prefix('estadoEventos')->group(function () {
     Route::get('/', [stateEventsController::class, 'getAll']);
     Route::post('/create', [stateEventsController::class, 'create']);
     Route::patch('/{id}', [stateEventsController::class, 'update']);
@@ -124,7 +125,7 @@ Route::prefix('estadosEventos')->group(function () {
 });
 
 // CRUD Estados Salas (solo uno!)
-Route::prefix('estadosSalas')->group(function () {
+Route::prefix('estadoSalas')->group(function () {
     Route::get('/', [StatesRoomsController::class, 'getAll']);
     Route::post('/create', [StatesRoomsController::class, 'create']);
     Route::patch('/{id}', [StatesRoomsController::class, 'update']);
@@ -145,5 +146,12 @@ Route::prefix('eventos')->group(function () {
     Route::post('/create', [EventController::class, 'create']);
     Route::patch('/{id}', [EventController::class, 'update']);
     Route::delete('/delete/{id}', [EventController::class, 'delete']);
+});
+
+Route::prefix('asistencia')->group(function () {
+    Route::get('/', [assitancesController::class, 'getAll']);
+    Route::post('/create', [assitancesController::class, 'create']);
+    Route::patch('/{id}', [assitancesController::class, 'update']);
+    Route::delete('/delete/{id}', [assitancesController::class, 'delete']);
 });
 

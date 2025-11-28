@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();            
             $table->string('name');
             $table->string('description');
-            $table->foreignId('state_reason_id')->constrained("Reason_states");
+            $table->foreignId('state_reason_id')->constrained("states_reason");
             $table->timestamps();
         });
     }

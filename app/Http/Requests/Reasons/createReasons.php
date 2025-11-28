@@ -24,7 +24,7 @@ class createReasons extends FormRequest
         return [
             'nombre' => 'required|string',
             'descripcion' => 'nullable|string|',
-            'estados_id' => 'required|exists:reason_states,id',
+            'estados_id' => 'required|exists:states_Reason,id',
         ];
     }
     public function messages(): array
