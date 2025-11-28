@@ -24,7 +24,7 @@ class updateStates extends FormRequest
         $id = $this->route('id');
 
         return [
-            'nombre' => "required|string|max:50|unique:'reason_states',name,{$id}",
+            'nombre' => "required|string|max:50|unique:reason_states,name,{$id}",
         ];
     }
     public function messages(): array

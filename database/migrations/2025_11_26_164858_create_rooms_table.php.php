@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description');
-            $table->foreignId('state_room_id')->constrained('state_events');
+            $table->foreignId('state_room_id')->constrained('state_rooms');
             $table->timestamps();
         });
     }

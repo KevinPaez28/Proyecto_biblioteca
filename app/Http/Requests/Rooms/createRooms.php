@@ -38,6 +38,7 @@ class createRooms extends FormRequest
 
             'estado_id.required'   => 'El estado de la sala es obligatorio.',
             'estado_id.exists'     => 'El estado seleccionado no es válido.',
+            'nombre' => 'required|string|max:50'
         ];
     }
 }
