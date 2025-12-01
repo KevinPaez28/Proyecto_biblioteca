@@ -4,6 +4,7 @@ namespace App\Models\User;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Models\assitances\assitances;
 use App\Models\Profiles\Profiles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -49,7 +50,7 @@ class User extends Authenticatable
 
     public function perfil()
     {
-        return $this->hasOne(Profiles::class,'usuario_id');
-
+        return $this->hasOne(Profiles::class, 'usuario_id');
     }
+   
 }

@@ -125,7 +125,7 @@ Route::prefix('estadoEventos')->group(function () {
 });
 
 // CRUD Estados Salas (solo uno!)
-Route::prefix('estadoSalas')->group(function () {
+Route::prefix('estadosalas')->group(function () {
     Route::get('/', [StatesRoomsController::class, 'getAll']);
     Route::post('/create', [StatesRoomsController::class, 'create']);
     Route::patch('/{id}', [StatesRoomsController::class, 'update']);

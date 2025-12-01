@@ -22,10 +22,10 @@ class createAssistances extends FormRequest
     public function rules(): array
     {
         return [
-            'usuario_id'         => 'required|exists:users,id',
-            'jornada'  => 'required|exists:shifts,id',
-            'motivo'       => 'required|exists:reasons,id',
-            'evento'        => 'required|exists:events,id',
+            'usuario_id' => 'required|exists:users,document',
+            'jornada' => 'exists:shifts,id',
+            'motivo'=> 'required|exists:reasons,id',
+            'evento' => 'nullable|exists:events,id',
         ];
     }
 
@@ -41,7 +41,6 @@ class createAssistances extends FormRequest
             'motivo.required'      => 'El motivo es obligatorio.',
             'motivo.exists'        => 'El motivo seleccionado no existe.',
 
-            'evento.required'       => 'El evento es obligatorio.',
             'evento.exists'         => 'El evento seleccionado no existe.',
         ];
     }

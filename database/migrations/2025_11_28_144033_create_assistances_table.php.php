@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('working_day_id')->constrained('shifts');
             $table->foreignId('reason_id')->constrained('reasons');
-            $table->foreignId('event_id')->constrained('events');
+            $table->foreignId('event_id')->nullable()->constrained('events');
             $table->timestamps();
         });
     }

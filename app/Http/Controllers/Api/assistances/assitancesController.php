@@ -44,12 +44,13 @@ class assitancesController extends Controller
     {
         $data = $request->validated();
 
-        $response = $this->assitancesServices->updateAssistances($data, $id);
-
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
-
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+        return response()->json([
+            'success' => true,
+            'code'    => 200,
+            'message' => 'Datos recibidos correctamente',
+            'data'    => $data
+        ]);
+    
     }
     public function delete(string $id)
     {

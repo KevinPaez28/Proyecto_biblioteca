@@ -3,8 +3,12 @@
 namespace App\Services\assitances;
 
 use App\Models\assitances\assitances;
+use App\Models\Schedules\Schedules;
+use App\Models\Shifts\Shifts;
+use App\Models\User\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class assitanceServices
 {
@@ -30,19 +34,70 @@ class assitanceServices
     }
     public function CreateAssistances(array $data)
     {
-        echo implode(",", $data);
-        $rooms = assitances::Create([
-            'user_id' => $data['usuario_id'],
-            'working_day_id' => $data['jornada'],
-            'reason_id' => $data['motivo'],
-            'event_id' => $data['evento'],
+        //hacemos una consulta con el documento con el documento para mirar si tiene usuario creado
+        $usuario = User::where('document', $data['usuario_id'])->first();
+        if (!$usuario) {
+            return [
+                'error' => true,
+                'code' => 404,
+                'message' => 'El usuario con ese documento no existe.',
+            ];
+        }
+
+        //funcion carbon para utilizar la hora de laravel
+        $horaActual = now()->format('H:i');
+
+        //buscamos que el horario este dentro de los horarios establecidos
+        $horario = Schedules::where('start_time', '<=', $horaActual)
+            ->where('end_time', '>=', $horaActual)
+            ->first();
+
+
+        if (!$horario) {
+            return [
+                'error' => true,
+                'code' => 422,
+                'message' => 'No hay ningún horario activo a esta hora',
+            ];
+        }
+
+        // si existe el horario buscamos la jornada por el id
+        $jornada = $horario->shifts()->first(); 
+
+        if (!$jornada) {
+            return [
+                'error' => true,
+                'code' => 422,
+                'message' => 'No hay ninguna jornada activa a esta hora',
+            ];
+        }
+
+        // verificamos por id que el usuario no tenga mas de un registro en la jornada 
+        $existe = assitances::where('user_id', $usuario->id)
+            ->where('working_day_id', $jornada->id)
+            ->exists();
+
+        if ($existe) {
+            return [
+                'error' => true,
+                'code' => 409,
+                'message' => 'El usuario ya tiene una asistencia registrada en esta jornada.',
+            ];
+        }
+
+        // 6. Crear asistencia
+        $asistencia = assitances::create([
+            'user_id'        => $usuario->id,
+            'working_day_id' => $jornada->id, 
+            'reason_id'      => $data['motivo'],
+            'event_id'       => $data['evento'] ?? null,
         ]);
-        
+
         return [
-            'error' => false,
-            'code' => 201,
+            'error'   => false,
+            'code'    => 201,
             'message' => 'Asistencia creada con éxito',
-            'data' => $data,
+            'data'    => $asistencia,
         ];
     }
 
