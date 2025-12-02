@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Profile\ProfileController;
 use App\Http\Controllers\Api\Program\ProgramController;
 use App\Http\Controllers\Api\Reason\ReasonController;
 use App\Http\Controllers\Api\Reason_estates\estatesController;
+use App\Http\Controllers\Api\Roles\rolesController;
 use App\Http\Controllers\Api\Rooms\RoomsController;
 use App\Http\Controllers\Api\Schedules\SchedulesController;
 use App\Http\Controllers\Api\Shifts\ShiftsController;
@@ -35,6 +36,22 @@ Route::prefix('user')->group(function () {
     Route::patch('/{id}', [UserController::class, 'update']);
     Route::delete('/delete/{id}', [UserController::class, 'delete']);
 });
+// CRUD roles
+Route::prefix('roles')->group(function () {
+    Route::get('/', [rolesController::class, 'getAll']);
+    Route::post('/create', [rolesController::class, 'create']);
+    Route::patch('/{id}', [rolesController::class, 'update']);
+    Route::delete('/delete/{id}', [rolesController::class, 'delete']);
+});
+
+//CRUD Permisos
+Route::prefix('roles')->group(function () {
+    Route::get('/', [rolesController::class, 'getAll']);
+    Route::post('/create', [rolesController::class, 'create']);
+    Route::patch('/{id}', [rolesController::class, 'update']);
+    Route::delete('/delete/{id}', [rolesController::class, 'delete']);
+});
+
 
 // CRUD Programas
 Route::prefix('programa')->group(function () {
@@ -143,6 +160,7 @@ Route::prefix('salas')->group(function () {
 // CRUD Eventos
 Route::prefix('eventos')->group(function () {
     Route::get('/', [EventController::class, 'getAll']);
+    Route::get('/today', [EventController::class, 'gettoday']);
     Route::post('/create', [EventController::class, 'create']);
     Route::patch('/{id}', [EventController::class, 'update']);
     Route::delete('/delete/{id}', [EventController::class, 'delete']);

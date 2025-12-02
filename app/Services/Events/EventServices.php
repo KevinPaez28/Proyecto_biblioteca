@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class EventServices
 {
-   public function getEvents()
+    public function getEvents()
     {
         $rooms = events::all();
 
@@ -28,6 +28,29 @@ class EventServices
             "data" => $rooms
         ];
     }
+    public function gettoday()
+    {
+        // Traer solo eventos del día de hoy
+        $rooms = events::whereDate('date', today())->get();
+
+        if ($rooms->isEmpty()) {
+            return [
+                "error" => false,
+                "code" => 200,
+                "message" => "No hay eventos registrados hoy",
+                "data" => $rooms
+            ];
+        }
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Eventos obtenidos con éxito",
+            "data" => $rooms
+        ];
+    }
+
+
     public function CreateEvents(array $data)
     {
         $rooms = events::Create([
@@ -37,7 +60,7 @@ class EventServices
             'date' => $data['fecha'],
             'state_event_id' => $data['estado_id'],
         ]);
-        
+
         return [
             'error' => false,
             'code' => 201,

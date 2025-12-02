@@ -1,47 +1,39 @@
 <?php
 
-namespace App\Http\Controllers\Api\Events;
+namespace App\Http\Controllers\Api\Roles;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Events\createEvent;
-use App\Http\Requests\Events\updateEvent;
-use App\Services\Events\EventServices;
+use App\Http\Requests\Roles\createRoles;
+use App\Http\Requests\Roles\updateRoles;
+use App\Services\roleServices\RoleServices;
+use Illuminate\Http\Request;
 
-class EventController extends Controller
+class rolesController extends Controller
 {
-    protected $EventServices;
+    protected $RoleServices;
 
 
-    public function __construct(EventServices $Eventservices)
+    public function __construct(RoleServices $rolesservices)
     {
-        $this->EventServices = $Eventservices;
+        $this->RoleServices = $rolesservices;
     }
 
     public function getAll()
     {
-        $response = $this->EventServices->getEvents();
+        $response = $this->RoleServices->getRoles();
+
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-
-    public function gettoday()
-    {
-        $response = $this->EventServices->gettoday();
-
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
-
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
-    }
-    public function create(createEvent $request)
+    public function create(createRoles $request)
     {
         $data = $request->validated();
 
-        $response = $this->EventServices->CreateEvents($data);
+        $response = $this->RoleServices->createRoles($data);
 
 
         if ($response['error'])
@@ -49,11 +41,11 @@ class EventController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function update(updateEvent $request, string $id)
+    public function update(updateRoles $request, string $id)
     {
         $data = $request->validated();
 
-        $response = $this->EventServices->updateEvents($data, $id);
+        $response = $this->RoleServices->updateRoles($data, $id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
@@ -62,7 +54,7 @@ class EventController extends Controller
     }
     public function delete(string $id)
     {
-        $response = $this->EventServices->deleteEvents($id);
+        $response = $this->RoleServices->deleteRoles($id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);

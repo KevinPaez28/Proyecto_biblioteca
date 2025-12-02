@@ -34,7 +34,7 @@ class assitanceServices
     }
     public function CreateAssistances(array $data)
     {
-        //hacemos una consulta con el documento con el documento para mirar si tiene usuario creado
+        // 1. Validar usuario
         $usuario = User::where('document', $data['usuario_id'])->first();
         if (!$usuario) {
             return [
@@ -44,14 +44,13 @@ class assitanceServices
             ];
         }
 
-        //funcion carbon para utilizar la hora de laravel
+        // 2. Hora actual
         $horaActual = now()->format('H:i');
 
-        //buscamos que el horario este dentro de los horarios establecidos
+        // 3. Buscar horario activo
         $horario = Schedules::where('start_time', '<=', $horaActual)
             ->where('end_time', '>=', $horaActual)
             ->first();
-
 
         if (!$horario) {
             return [
@@ -61,9 +60,8 @@ class assitanceServices
             ];
         }
 
-        // si existe el horario buscamos la jornada por el id
-        $jornada = $horario->shifts()->first(); 
-
+        // 4. Obtener jornada
+        $jornada = $horario->shifts()->first();
         if (!$jornada) {
             return [
                 'error' => true,
@@ -72,23 +70,25 @@ class assitanceServices
             ];
         }
 
-        // verificamos por id que el usuario no tenga mas de un registro en la jornada 
+        // 5. VALIDACIÓN MEJORADA:
+        // Verificar asistencia SOLO en la misma jornada DEL MISMO DÍA
         $existe = assitances::where('user_id', $usuario->id)
             ->where('working_day_id', $jornada->id)
+            ->whereDate('created_at', today())   // ⬅️ ESTA ES LA CLAVE
             ->exists();
 
         if ($existe) {
             return [
                 'error' => true,
                 'code' => 409,
-                'message' => 'El usuario ya tiene una asistencia registrada en esta jornada.',
+                'message' => 'El usuario ya tiene una asistencia registrada en esta jornada hoy.',
             ];
         }
 
         // 6. Crear asistencia
         $asistencia = assitances::create([
             'user_id'        => $usuario->id,
-            'working_day_id' => $jornada->id, 
+            'working_day_id' => $jornada->id,
             'reason_id'      => $data['motivo'],
             'event_id'       => $data['evento'] ?? null,
         ]);
@@ -100,6 +100,7 @@ class assitanceServices
             'data'    => $asistencia,
         ];
     }
+
 
     public function updateAssistances(array $data, $id)
     {

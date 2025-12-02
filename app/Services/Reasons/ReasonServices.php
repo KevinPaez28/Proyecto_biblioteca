@@ -29,6 +29,27 @@ class ReasonServices
             "data" => $reasons
         ];
     }
+
+    public function gettoday()
+    {
+        $reasons = reasons::all();
+
+        if (count($reasons) == 0)
+            return [
+                "error" => false,
+                "code" => 200,
+                "message" => "No hay motivos registrados",
+                "data" => $reasons
+            ];
+
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Motivos obtenidos con éxito",
+            "data" => $reasons
+        ];
+    }
     public function CreateReasons(array $data)
     {
         $reasons = reasons::Create([
