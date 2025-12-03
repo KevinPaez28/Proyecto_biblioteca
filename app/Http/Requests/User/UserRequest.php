@@ -22,9 +22,17 @@ class UserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'documento' => 'required|string|unique:users,document|min:8|max:10',
-            'contrasena' => 'required|string|min:8',
+            'documento' => 'required|string|min:8|max:10',
+            'contrasena' => 'string|min:8',
             'estados_id' => 'required|exists:user_statuses,id',
+
+            'nombres'     => 'required|string|max:255',
+            'apellidos'   => 'required|string|max:255',
+            'rol_sena'    => 'required|exists:roles,id',
+            'ficha'       => 'nullable|exists:ficha,id',
+            'programa'    => 'nullable|exists:programs,id',
+            'correo'      => 'required|email|max:255',
+            'telefono'    => 'required|string|max:20',
         ];
     }
 
@@ -32,21 +40,20 @@ class UserRequest extends FormRequest
     {
         return [
             'documento.required' => 'El documento es obligatorio.',
-            'documento.unique' => 'El documento ya existe.',
             'documento.min' => 'El documento debe tener mínimo 8 caracteres.',
             'documento.max' => 'El documento no puede tener más de 10 caracteres.',
-            'contrasena.required' => 'La contraseña es obligatoria.',
-            'contrasena.min' => 'La contraseña debe tener al menos 8 caracteres.',
+
+            'contrasena.min'     => 'La contraseña debe tener al menos 8 caracteres.',
+
             'estados_id.required' => 'El estado es obligatorio.',
-            'estados_id.exists' => 'El estado seleccionado no existe.',
+            'estados_id.exists'  => 'El estado no existe.',
+
+            'nombres.required'   => 'Los nombres son obligatorios.',
+            'apellidos.required' => 'Los apellidos son obligatorios.',
+            'rol_sena.required'  => 'El rol es obligatorio.',
+            'correo.required'    => 'El correo es obligatorio.',
+            'correo.email'       => 'El correo no es válido.',
+            'telefono.required'  => 'El teléfono es obligatorio.',
         ];
-    }
-    public function attributes(): array
-    {
-        return [
-            'document' => 'número de documento',
-            'password' => 'contrasena',
-            'status_id' => 'Estado'
-             ];
     }
 }

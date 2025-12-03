@@ -2,8 +2,13 @@
 
 namespace App\Services\User;
 
+use App\Models\Ficha\Ficha;
+use Illuminate\Support\Str; 
+use App\Models\Ficha_users\ficha_user;
 use App\Models\User\User;
 use App\Models\Perfiles\Perfiles;
+use App\Models\Profiles\Profiles;
+use App\Models\Program\Program;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -31,20 +36,51 @@ class UserService
     }
     public function CreateUser(array $data)
     {
+        $usuarioExistente = User::where('document', $data['documento'])->first();
 
-        $user = User::create([
-            'document' => $data['documento'],
-            'password' => $data['contrasena'],
-            'status_id' => $data['estados_id'],
-        ]);
+
+        if ($usuarioExistente) {
+            $user = $usuarioExistente;
+        } else {
+            // Str::random(12);
+            $password = 123456789;
+            $user = User::create([
+                'document'  => $data['documento'],
+                'password'  => bcrypt($password),
+                'status_id' => 1,
+            ]);
+        }
+
+        Profiles::updateOrCreate(
+            ['usuario_id' => $user->id],
+            [
+                'name'   => $data['nombres'],
+                'last_name' => $data['apellidos'],
+                'phone'  => $data['telefono'],
+                'email'    => $data['correo'],
+
+            ]
+        );
+
+
+        if (!empty($data['ficha_id'])) {
+            ficha_user::updateOrCreate(
+                ['usuario_id' => $user->id],
+                ['ficha_id' => $data['ficha_id']]
+            );
+        }
+
+        
 
         return [
             'error' => false,
             'code' => 201,
-            'message' => 'Usuario creada con éxito',
+            'message' => 'Usuario creado correctamente',
             'data' => $user,
         ];
     }
+
+
     public function getAllInformation()
     {
         $users = User::with('profile')->orderBy('id')->get();

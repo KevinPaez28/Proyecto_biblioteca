@@ -9,9 +9,9 @@ class Profiles extends Model
 {
     protected $fillable = ['usuario_id', 'name', 'last_name', 'phone', 'email', 'ficha_id'];
 
-
     public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+{
+    return $this->belongsTo(User::class, 'usuario_id');
+}
+
 }
