@@ -22,14 +22,14 @@ class UserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'documento' => 'required|string|min:8|max:10',
+            'documento' => 'required|string|min:8|max:10|unique:users,document',
             'contrasena' => 'string|min:8',
             'estados_id' => 'required|exists:user_statuses,id',
 
             'nombres'     => 'required|string|max:255',
             'apellidos'   => 'required|string|max:255',
             'rol_sena'    => 'required|exists:roles,id',
-            'ficha'       => 'nullable|exists:ficha,id',
+            'ficha_id'       => 'nullable|exists:ficha,id',
             'programa'    => 'nullable|exists:programs,id',
             'correo'      => 'required|email|max:255',
             'telefono'    => 'required|string|max:20',
@@ -42,6 +42,7 @@ class UserRequest extends FormRequest
             'documento.required' => 'El documento es obligatorio.',
             'documento.min' => 'El documento debe tener mínimo 8 caracteres.',
             'documento.max' => 'El documento no puede tener más de 10 caracteres.',
+            'documento.unique' => 'El documento ya esta registrado',
 
             'contrasena.min'     => 'La contraseña debe tener al menos 8 caracteres.',
 
