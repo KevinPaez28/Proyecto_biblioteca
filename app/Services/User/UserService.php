@@ -36,36 +36,39 @@ class UserService
     }
     public function CreateUser(array $data)
     {
-        Str::random(12);
         $password = 123456789;
+    
         $user = User::create([
             'document'  => $data['documento'],
+            'email'     => $data['correo'],   // <-- AGREGADO
             'password'  => bcrypt($password),
             'status_id' => 1,
         ]);
-
+    
         Profiles::create([
             'usuario_id' => $user->id,
             'name'       => $data['nombres'],
             'last_name'  => $data['apellidos'],
             'phone'      => $data['telefono'],
-            'email'      => $data['correo'],
         ]);
-
+    
         if (!empty($data['ficha_id'])) {
             ficha_user::create([
                 'usuario_id' => $user->id,
                 'ficha_id'   => $data['ficha_id'],
             ]);
         }
-
+    
+        $user->sendEmailVerificationNotification();
+    
         return [
             'error'   => false,
             'code'    => 201,
-            'message' => 'Usuario creado correctamente',
+            'message' => 'Usuario creado correctamente. Revisa tu correo para verificar la cuenta.',
             'data'    => $user,
         ];
     }
+    
 
 
 

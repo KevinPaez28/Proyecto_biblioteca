@@ -44,14 +44,6 @@ Route::prefix('roles')->group(function () {
     Route::delete('/delete/{id}', [rolesController::class, 'delete']);
 });
 
-//CRUD Permisos
-Route::prefix('roles')->group(function () {
-    Route::get('/', [rolesController::class, 'getAll']);
-    Route::post('/create', [rolesController::class, 'create']);
-    Route::patch('/{id}', [rolesController::class, 'update']);
-    Route::delete('/delete/{id}', [rolesController::class, 'delete']);
-});
-
 
 // CRUD Programas
 Route::prefix('programa')->group(function () {
