@@ -35,13 +35,11 @@ class UserService
         ];
     }
     public function CreateUser(array $data)
-    {
-        $password = 123456789;
-    
+    {    
         $user = User::create([
             'document'  => $data['documento'],
-            'email'     => $data['correo'],   // <-- AGREGADO
-            'password'  => bcrypt($password),
+            'email'     => $data['correo'],   
+            'password'  => bcrypt($data['contrasena']),
             'status_id' => 1,
         ]);
     

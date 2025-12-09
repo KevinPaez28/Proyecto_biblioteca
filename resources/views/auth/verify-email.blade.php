@@ -9,7 +9,7 @@
     <p>Revisa tu correo para encontrar el enlace de verificación.</p>
 
     @if (session('message'))
-        <p style="color: green;">{{ session('message') }}</p>
+        <p>{{ session('message') }}</p>
     @endif
 
     <form method="POST" action="{{ route('verification.send') }}">

@@ -70,11 +70,10 @@ class assitanceServices
             ];
         }
 
-        // 5. VALIDACIÓN MEJORADA:
         // Verificar asistencia SOLO en la misma jornada DEL MISMO DÍA
         $existe = assitances::where('user_id', $usuario->id)
             ->where('working_day_id', $jornada->id)
-            ->whereDate('created_at', today())   // ⬅️ ESTA ES LA CLAVE
+            ->whereDate('created_at', today()) 
             ->exists();
 
         if ($existe) {

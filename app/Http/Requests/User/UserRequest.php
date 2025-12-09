@@ -48,7 +48,7 @@ class UserRequest extends FormRequest
 
             'estados_id.required' => 'El estado es obligatorio.',
             'estados_id.exists'  => 'El estado no existe.',
-
+             
             'nombres.required'   => 'Los nombres son obligatorios.',
             'apellidos.required' => 'Los apellidos son obligatorios.',
             'rol_sena.required'  => 'El rol es obligatorio.',
