@@ -11,6 +11,7 @@ use App\Models\Profiles\Profiles;
 use App\Models\Program\Program;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class UserService
 {
@@ -35,30 +36,33 @@ class UserService
         ];
     }
     public function CreateUser(array $data)
-    {    
+    {
         $user = User::create([
             'document'  => $data['documento'],
-            'email'     => $data['correo'],   
+            'email'     => $data['correo'],
             'password'  => bcrypt($data['contrasena']),
             'status_id' => 1,
         ]);
-    
+
         Profiles::create([
             'usuario_id' => $user->id,
             'name'       => $data['nombres'],
             'last_name'  => $data['apellidos'],
             'phone'      => $data['telefono'],
         ]);
-    
+
+        // Asignar rol usando Spatie
+        $user->assignRole($data['rol']);
+
         if (!empty($data['ficha_id'])) {
             ficha_user::create([
                 'usuario_id' => $user->id,
                 'ficha_id'   => $data['ficha_id'],
             ]);
         }
-    
+
         $user->sendEmailVerificationNotification();
-    
+
         return [
             'error'   => false,
             'code'    => 201,
@@ -66,8 +70,6 @@ class UserService
             'data'    => $user,
         ];
     }
-    
-
 
 
     public function getAllInformation()
