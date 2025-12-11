@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Http\Requests\Reset;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class loginRequest extends FormRequest
+class requestEmail extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,19 +22,18 @@ class loginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'document' => 'required|string',
-            'password' => 'required|string',
+            'document' => 'required|exists:users,document',
         ];
     }
 
-    public function messages()
+    /**
+     * Custom messages for validation errors.
+     */
+    public function messages(): array
     {
         return [
-            'document.required' => 'El documento es obligatorio',
-            'password.required' => 'La contraseña es obligatoria',
-
-            'password.string' => 'La contraseña debe ser texto',
-            'document.string' => 'El documento debe ser tener el formato correcto',
+            'document.required' => 'El documento es obligatorio.',
+            'document.exists'   => 'El documento no existe en el sistema.',
         ];
     }
 }

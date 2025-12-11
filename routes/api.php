@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Actions_Historys\ActionsController;
 use App\Http\Controllers\Api\assistances\assitancesController;
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Documents\DocumentController;
 use App\Http\Controllers\Api\Events\EventController;
 use App\Http\Controllers\Api\Ficha\FichaController;
@@ -27,6 +28,8 @@ Route::get('/prueba', function () {
 
 // LOGIN
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword']);
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 
 // CRUD Usuarios
 Route::prefix('user')->group(function () {

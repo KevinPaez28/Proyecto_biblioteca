@@ -8,6 +8,8 @@ use App\Http\Requests\Auth\loginRequest;
 use App\Services\Auth\AuthServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -72,4 +74,6 @@ class AuthController extends Controller
         ->cookie($expiredCookies['expiredAccessToken'])
         ->cookie($expiredCookies['expiredRefreshToken']);
     }
+   
+    
 }
