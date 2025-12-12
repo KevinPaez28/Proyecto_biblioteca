@@ -23,7 +23,7 @@ class Resetpassword extends FormRequest
     {
         return [
             'token'    => 'required',
-            'email'    => 'required|email|exists:users,email',
+            'email'    => 'email|exists:users,email',
             'password' => 'required|min:8|confirmed',
         ];
     }
@@ -32,7 +32,6 @@ class Resetpassword extends FormRequest
     {
         return [
             'token.required' => 'El token es obligatorio.',
-            'email.required' => 'El correo es obligatorio.',
             'email.email'    => 'Debe ingresar un correo válido.',
             'email.exists'   => 'El correo no existe en el sistema.',
             'password.required'  => 'La contraseña es obligatoria.',

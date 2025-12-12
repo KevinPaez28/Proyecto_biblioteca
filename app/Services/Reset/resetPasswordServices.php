@@ -6,6 +6,7 @@ use App\Models\User\User;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 
@@ -39,66 +40,142 @@ class resetPasswordServices
                 ->subject('Recuperación de contraseña'); // Asunto del correo
         });
 
+        $hiddenEmail = $this->SecretEmail($user->email);
+
+
         // Retornamos respuesta de éxito
         return [
             'error' => false,
             'message' => 'Se ha enviado el token al correo del usuario.',
-            'code' => 200
+            'code' => 200,
+            'data' => [
+                'email' => $hiddenEmail
+            ]
         ];
     }
+
+    public function validateToken(string $token): array
+    {
+        // Busco el registro del token (el más reciente)
+        $record = DB::table('password_reset_tokens')->orderBy('created_at', 'desc')->first();
+
+        // Si no hay nada, pues no hay token
+        if (!$record) {
+            return [
+                'error' => true,
+                'message' => 'No hay token guardado.',
+                'code' => 404,
+                'data' => []
+            ];
+        }
+
+        // Comparo el token que mandó el usuario con el token guardado (que está en hash)
+        if (!Hash::check($token, $record->token)) {
+            return [
+                'error' => true,
+                'message' => 'El token no coincide.',
+                'code' => 422,
+                'data' => ['token' => ['Token incorrecto']]
+            ];
+        }
+
+        // Tiempo que dura el token (normalmente 60 minutos)
+        $tiempo = config('auth.passwords.users.expire', 60);
+
+        // Veo si ya pasó el tiempo
+        if (now()->diffInMinutes($record->created_at) > $tiempo) {
+            return [
+                'error' => true,
+                'message' => 'El token ya expiró.',
+                'code' => 422,
+                'data' => ['token' => ['Token vencido']]
+            ];
+        }
+
+        // Si todo está bien
+        return [
+            'error' => false,
+            'message' => 'Token válido.',
+            'code' => 200,
+            'data' => [
+                'email' => $record->email // para saber quién es
+            ]
+        ];
+    }
+
 
     /**
      * Resetear contraseña usando token
      */
     public function resetPassword(array $data): array
     {
-        // Se llama al método reset del Password 
-        // Este método valida:
-        // - Token
-        // - Email
-        // - Nueva contraseña y confirmación
-        // Si todo es válido, ejecuta el callback
-        $status = Password::reset(
-            [
-                'email' => $data['email'], // Email del usuario
-                'password' => $data['password'], // Nueva contraseña
-                'password_confirmation' => $data['password_confirmation'], // Confirmación
-                'token' => $data['token'], // Token recibido por correo
-            ],
-            // Callback que se ejecuta si el token y datos son válidos
-            function (User $user, string $password) {
-                // Actualizamos la contraseña del usuario de forma segura
-                $user->forceFill([
-                    'password' => Hash::make($password) // Hash seguro de la contraseña
-                ])
-                // Generamos un nuevo remember token para invalidar sesiones anteriores
-                ->setRememberToken(Str::random(60));
+        // Buscamos el token en la tabla password_reset_tokens
+        $record = DB::table('password_reset_tokens')->orderBy('created_at', 'desc')->first();
 
-                // Guardamos los cambios en la base de datos
-                $user->save();
-
-                // Disparamos el evento PasswordReset de Laravel
-                // Permite ejecutar acciones adicionales como notificaciones o logs
-                event(new PasswordReset($user));
-            }
-        );
-
-        // Verificamos si el reset fue exitoso
-        if ($status === Password::PASSWORD_RESET) {
-            // Retornamos respuesta de éxito
+        if (!$record) {
             return [
-                'error' => false,
-                'message' => 'Contraseña restablecida correctamente.',
-                'code' => 200
+                'error' => true,
+                'message' => 'Token no encontrado.',
+                'code' => 422
             ];
         }
 
-        // Si hubo un error (token inválido, expirado o datos incorrectos)
+        // Verificamos que el token coincida
+        if (!Hash::check($data['token'], $record->token)) {
+            return [
+                'error' => true,
+                'message' => 'Token incorrecto.',
+                'code' => 422
+            ];
+        }
+
+        // Validamos expiración (60 min)
+        $tiempo = 60;
+        if (now()->diffInMinutes($record->created_at) > $tiempo) {
+            return [
+                'error' => true,
+                'message' => 'Token vencido.',
+                'code' => 422
+            ];
+        }
+
+        // Buscamos el usuario por email
+        $user = User::where('email', $record->email)->first();
+        if (!$user) {
+            return [
+                'error' => true,
+                'message' => 'Usuario no encontrado.',
+                'code' => 422
+            ];
+        }
+
+        // Cambiamos la contraseña
+        $user->password = Hash::make($data['password']);
+        $user->save();
+
         return [
-            'error' => true,
-            'message' => __($status), // Mensaje de error traducido por Laravel
-            'code' => 422, // Código HTTP de error de validación
-            'data' => ['token' => ['Token inválido o expirado']] // Información adicional sobre el error
+            'error' => false,
+            'message' => 'Contraseña cambiada correctamente.',
+            'code' => 200
         ];
+    }
+
+
+    public function SecretEmail($email)
+    {
+        // Separamos el correo en 2 partes: antes del @ y después del @
+        $parst = explode('@', $email);
+
+        // La parte del nombre (antes del @)
+        $name = $parst[0];
+
+        // La parte del dominio (después del @)
+        $domain = $parst[1];
+
+        // Dejo solo la primera letra y lo demás lo cambio por *
+        $hiddenName = substr($name, 0, 1) . str_repeat('*', strlen($name) - 1);
+
+        // Junto el nombre oculto + @ + el dominio
+        return $hiddenName . '@' . $domain;
     }
 }

@@ -28,8 +28,9 @@ Route::get('/prueba', function () {
 
 // LOGIN
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword']);
-Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+Route::post('/validate', [PasswordResetController::class, 'validateToken']);
+Route::post('/Reset-password', [PasswordResetController::class, 'forgotPassword']);
+Route::post('/Reset-password/change', [PasswordResetController::class, 'resetPassword']);
 
 // CRUD Usuarios
 Route::prefix('user')->group(function () {
