@@ -35,6 +35,7 @@ class UserService
             "data" => $users
         ];
     }
+
     public function CreateUser(array $data)
     {
         $user = User::create([
@@ -51,8 +52,20 @@ class UserService
             'phone'      => $data['telefono'],
         ]);
 
-        // Asignar rol usando Spatie
-        $user->assignRole($data['rol']);
+        // ======= CORRECCIÓN =======
+        $rolId = $data['rol']; // viene del formulario como ID
+        $rolModel = Role::find($rolId);
+
+        if (!$rolModel) {
+            return [
+                'error'   => true,
+                'code'    => 404,
+                'message' => "Rol no encontrado con ID: $rolId",
+            ];
+        }
+
+        $user->assignRole($rolModel->name); // ahora sí usamos el nombre del rol
+        // ===========================
 
         if (!empty($data['ficha_id'])) {
             ficha_user::create([
@@ -61,12 +74,22 @@ class UserService
             ]);
         }
 
-        $user->sendEmailVerificationNotification();
+        // Solo admin recibe correo
+        if ($rolModel->name === 'administrador') {
+            $user->sendEmailVerificationNotification();
+
+            return [
+                'error'   => false,
+                'code'    => 201,
+                'message' => 'Usuario creado correctamente. Revisa tu correo para verificar la cuenta.',
+                'data'    => $user,
+            ];
+        }
 
         return [
             'error'   => false,
             'code'    => 201,
-            'message' => 'Usuario creado correctamente. Revisa tu correo para verificar la cuenta.',
+            'message' => 'Usuario creado correctamente.',
             'data'    => $user,
         ];
     }

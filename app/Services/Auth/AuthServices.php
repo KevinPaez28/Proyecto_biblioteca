@@ -14,6 +14,7 @@ class AuthServices
     public function login(array $credentials)
     {
         $user = User::where('document', $credentials['document'])->first();
+
         if (!$user) {
             return [
                 "error" => true,
@@ -21,8 +22,7 @@ class AuthServices
                 "message" => "Usuario no encontrado",
             ];
         }
-        
-        
+
         if (!Auth::attempt($credentials)) {
             return [
                 "error" => true,
@@ -30,7 +30,16 @@ class AuthServices
                 "message" => "Credenciales incorrectas.",
             ];
         }
-        
+
+        // VALIDAR QUE SEA ADMIN
+        if (!$user->hasRole('administrador')) {
+            return [
+                "error" => true,
+                "code" => 403,
+                "message" => "No tienes permisos para acceder.",
+            ];
+        }
+
         if (!$user->perfil) {
             return [
                 "error" => true,
@@ -38,10 +47,14 @@ class AuthServices
                 "message" => "Perfil no encontrado",
             ];
         }
-        $perfil = $user->perfil->name;
-        
-        $accessToken = $this->generateAccessToken($user);
 
+        $perfil = $user->perfil->name;
+
+        $roleUser = $user->roles->first();
+
+        $permissions = $roleUser -> permissions;
+
+        $accessToken = $this->generateAccessToken($user);
         $refreshToken = $this->generateRefreshToken($user);
 
         $cookieToken = cookie(
@@ -75,6 +88,8 @@ class AuthServices
             "data" => [
                 'id' => $user->id,
                 'names' => $perfil,
+                'role_id' => $roleUser->id,
+                'permissions' => $permissions->pluck('name'),
                 'cookieToken' => $cookieToken,
                 'cookieRefreshToken' => $cookieRefreshToken,
                 'token' => $accessToken,
@@ -143,6 +158,7 @@ class AuthServices
             "data" => [
                 'cookieToken' => $cookieToken,
                 'cookieRefreshToken' => $cookieRefreshToken,
+                'permissions' => $permissions->pluck('name'),
             ]
         ];
     }
