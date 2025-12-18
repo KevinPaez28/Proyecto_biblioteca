@@ -50,7 +50,6 @@ class assitancesController extends Controller
             'message' => 'Datos recibidos correctamente',
             'data'    => $data
         ]);
-    
     }
     public function delete(string $id)
     {
@@ -60,5 +59,48 @@ class assitancesController extends Controller
             return ResponseFormatter::error($response['message'], $response['code']);
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+    }
+    public function getTotalByDay()
+    {
+        $response = $this->assitancesServices->getTotalByDay();
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data']
+        );
+    }
+
+    public function getTotalByWeek()
+    {
+        $response = $this->assitancesServices->getTotalByWeek();
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data']
+        );
+    }
+
+    public function getTotalByMonth()
+    {
+        $response = $this->assitancesServices->getTotalByMonth();
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data']
+        );
+    }
+
+    public function getTotalGraduates()
+    {
+        $response = $this->assitancesServices->getTotalGraduates();
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data']
+        );
     }
 }

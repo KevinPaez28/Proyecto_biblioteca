@@ -52,7 +52,7 @@ class AuthServices
 
         $roleUser = $user->roles->first();
 
-        $permissions = $roleUser -> permissions;
+        $permissions = $user->getAllPermissions();
 
         $accessToken = $this->generateAccessToken($user);
         $refreshToken = $this->generateRefreshToken($user);
@@ -158,7 +158,6 @@ class AuthServices
             "data" => [
                 'cookieToken' => $cookieToken,
                 'cookieRefreshToken' => $cookieRefreshToken,
-                'permissions' => $permissions->pluck('name'),
             ]
         ];
     }

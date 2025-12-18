@@ -32,6 +32,68 @@ class assitanceServices
             "data" => $rooms
         ];
     }
+    public function getTotalByDay()
+    {
+        $total = assitances::whereDate('created_at', today())->count();
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Total assistances for today",
+            "data" => [
+                "total" => $total
+            ]
+        ];
+    }
+
+    public function getTotalByWeek()
+    {
+        $total = assitances::whereBetween('created_at', [
+            now()->startOfWeek(),
+            now()->endOfWeek()
+        ])->count();
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Total assistances for the current week",
+            "data" => [
+                "total" => $total
+            ]
+        ];
+    }
+    public function getTotalByMonth()
+    {
+        $total = assitances::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Total assistances for the current month",
+            "data" => [
+                "total" => $total
+            ]
+        ];
+    }
+    public function getTotalGraduates()
+    {
+        $total = assitances::whereHas('user', function ($q) {
+            $q->where('status', 'GRADUATED');
+        })->count();
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Total assistances for graduated users",
+            "data" => [
+                "total" => $total
+            ]
+        ];
+    }
+
+
     public function CreateAssistances(array $data)
     {
         // 1. Validar usuario
@@ -73,7 +135,7 @@ class assitanceServices
         // Verificar asistencia SOLO en la misma jornada DEL MISMO DÍA
         $existe = assitances::where('user_id', $usuario->id)
             ->where('working_day_id', $jornada->id)
-            ->whereDate('created_at', today()) 
+            ->whereDate('created_at', today())
             ->exists();
 
         if ($existe) {

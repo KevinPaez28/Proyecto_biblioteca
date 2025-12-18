@@ -59,10 +59,10 @@ Route::prefix('programa')->group(function () {
 
 // CRUD Perfiles
 Route::prefix('perfil')->group(function () {
-    Route::get('/', [ProfileController::class,'getAll']);
-    Route::post('/create', [ProfileController::class,'create']);
-    Route::patch('/{id}', [ProfileController::class,'update']);
-    Route::delete('/delete/{id}', [ProfileController::class,'delete']);
+    Route::get('/', [ProfileController::class, 'getAll']);
+    Route::post('/create', [ProfileController::class, 'create']);
+    Route::patch('/{id}', [ProfileController::class, 'update']);
+    Route::delete('/delete/{id}', [ProfileController::class, 'delete']);
 });
 
 // CRUD Fichas
@@ -167,5 +167,8 @@ Route::prefix('asistencia')->group(function () {
     Route::post('/create', [assitancesController::class, 'create']);
     Route::patch('/{id}', [assitancesController::class, 'update']);
     Route::delete('/delete/{id}', [assitancesController::class, 'delete']);
+    Route::get('/total-dia', [assitancesController::class, 'getTotalByDay']);
+    Route::get('/total-semana', [assitancesController::class, 'getTotalByWeek']);
+    Route::get('/total-mes', [assitancesController::class, 'getTotalByMonth']);
+    Route::get('/total-egresados', [assitancesController::class, 'getTotalGraduates']);
 });
-
