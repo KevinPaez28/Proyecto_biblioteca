@@ -171,4 +171,6 @@ Route::prefix('asistencia')->group(function () {
     Route::get('/total-semana', [assitancesController::class, 'getTotalByWeek']);
     Route::get('/total-mes', [assitancesController::class, 'getTotalByMonth']);
     Route::get('/total-egresados', [assitancesController::class, 'getTotalGraduates']);
+    Route::get('/estadisticas/mes', [assitancesController::class, 'getByMonth']);
+    Route::get('/estadisticas/eventos', [assitancesController::class, 'getByEvent']);
 });

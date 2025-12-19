@@ -28,6 +28,28 @@ class assitancesController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
+
+    public function getByMonth()
+    {
+        $response = $this->assitancesServices->getAssistancesByMonth();
+
+        
+        if ($response['error'])
+            return ResponseFormatter::error($response['message'], $response['code']);
+
+        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+        }
+
+    public function getByEvent()
+    {
+        $response = $this->assitancesServices->getAssistancesByEvent();
+
+        
+        if ($response['error'])
+            return ResponseFormatter::error($response['message'], $response['code']);
+
+        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+    }
     public function create(createAssistances $request)
     {
         $data = $request->validated();

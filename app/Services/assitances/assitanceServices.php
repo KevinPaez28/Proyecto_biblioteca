@@ -39,7 +39,7 @@ class assitanceServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Total assistances for today",
+            "message" => "Total asistencias de usuarios por dia",
             "data" => [
                 "total" => $total
             ]
@@ -56,7 +56,7 @@ class assitanceServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Total assistances for the current week",
+            "message" => "Total asistencias de usuarios por semena",
             "data" => [
                 "total" => $total
             ]
@@ -71,7 +71,7 @@ class assitanceServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Total assistances for the current month",
+            "message" => "Total asistencias de usuarios por mes",
             "data" => [
                 "total" => $total
             ]
@@ -86,10 +86,68 @@ class assitanceServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Total assistances for graduated users",
+            "message" => "Total de asistencias de usuarios egresados",
             "data" => [
                 "total" => $total
             ]
+        ];
+    }
+
+    public function getAssistancesByMonth()
+    {
+        $query = assitances::select(
+            DB::raw('MONTH(created_at) as mes'),
+            DB::raw('COUNT(*) as total')
+        )
+            ->whereYear('created_at', now()->year)
+            ->groupBy('mes')
+            ->orderBy('mes')
+            ->get();
+
+        $labels = [];
+        $values = [];
+
+        foreach ($query as $row) {
+            $labels[] = now()->month($row->mes)->translatedFormat('F');
+            $values[] = $row->total;
+        }
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Estadísticas de asistencias por mes",
+            "data" => [
+                "labels" => $labels,
+                "values" => $values
+            ]
+        ];
+    }
+
+    public function getAssistancesByEvent()
+    {
+        $query = assitances::select(
+            'event_id',
+            DB::raw('COUNT(*) as total')
+        )
+            ->whereNotNull('event_id')
+            ->groupBy('event_id')
+            ->with('event:id,name')
+            ->get();
+
+        $data = [];
+
+        foreach ($query as $row) {
+            $data[] = [
+                "name" => $row->event->name ?? 'Sin evento',
+                "total" => $row->total
+            ];
+        }
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Estadísticas de asistencias por evento",
+            "data" => $data
         ];
     }
 
