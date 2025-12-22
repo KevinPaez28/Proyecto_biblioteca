@@ -28,4 +28,8 @@ class assitances extends Model
     {
         return $this->belongsTo(Schedules::class); // Cada asistencia puede pertenecer a un horario
     }
+    public function event()
+    {
+        return $this->belongsTo(events::class, 'event_id');
+    }
 }

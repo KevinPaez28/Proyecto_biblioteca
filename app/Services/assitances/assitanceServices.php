@@ -80,7 +80,9 @@ class assitanceServices
     public function getTotalGraduates()
     {
         $total = assitances::whereHas('user', function ($q) {
-            $q->where('status', 'GRADUATED');
+            $q->whereHas('roles', function ($r) {
+                $r->where('name', 'EGRESADO');
+            });
         })->count();
 
         return [
@@ -93,8 +95,11 @@ class assitanceServices
         ];
     }
 
+
     public function getAssistancesByMonth()
     {
+        \Carbon\Carbon::setLocale('es'); // Asegurarse que los meses estén en español
+
         $query = assitances::select(
             DB::raw('MONTH(created_at) as mes'),
             DB::raw('COUNT(*) as total')
@@ -125,23 +130,14 @@ class assitanceServices
 
     public function getAssistancesByEvent()
     {
-        $query = assitances::select(
-            'event_id',
-            DB::raw('COUNT(*) as total')
-        )
-            ->whereNotNull('event_id')
-            ->groupBy('event_id')
-            ->with('event:id,name')
+        $data = DB::table('assistances')
+            ->join('events', 'assistances.event_id', '=', 'events.id')
+            ->select(
+                'events.name',
+                DB::raw('COUNT(assistances.id) as total')
+            )
+            ->groupBy('events.name')
             ->get();
-
-        $data = [];
-
-        foreach ($query as $row) {
-            $data[] = [
-                "name" => $row->event->name ?? 'Sin evento',
-                "total" => $row->total
-            ];
-        }
 
         return [
             "error" => false,
@@ -150,8 +146,6 @@ class assitanceServices
             "data" => $data
         ];
     }
-
-
     public function CreateAssistances(array $data)
     {
         // 1. Validar usuario

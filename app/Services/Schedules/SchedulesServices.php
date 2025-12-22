@@ -3,6 +3,7 @@
 namespace App\Services\Schedules;
 
 use App\Models\Schedules\Schedules;
+use App\Models\Shifts\Shifts;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -28,6 +29,42 @@ class SchedulesServices
             "data" => $schedules
         ];
     }
+    public function getJornadasAndHorarios()
+    {
+        $shifts = Shifts::all();
+
+        if (count($shifts) == 0) {
+            return [
+                "error" => false,
+                "code" => 200,
+                "message" => "No hay jornadas registradas",
+                "data" => []
+            ];
+        }
+
+        $data = [];
+
+        foreach ($shifts as $shift) {
+            $horario = Schedules::where('id', $shift->schedules_id)->first();
+
+            if ($horario) {
+                $data[] = [
+                    'id' => $shift->id,
+                    'jornada' => $shift->name,
+                    'start_time' => date("g:i A", strtotime($horario->start_time)),
+                    'end_time' => date("g:i A", strtotime($horario->end_time)),
+                ];
+            }
+        }
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Jornadas con horarios obtenidas con éxito",
+            "data" => $data
+        ];
+    }
+
     public function CreateSchedules(array $data)
     {
         $schedules = Schedules::Create([
