@@ -100,7 +100,7 @@ Route::prefix('historial')->group(function () {
 // CRUD Horarios
 Route::prefix('horarios')->group(function () {
     Route::get('/', [SchedulesController::class, 'getAll']);
-    Route::get('/Jornadas', [SchedulesController::class, 'jornadasandhorarios']);
+    Route::get('/jornadas', [SchedulesController::class, 'jornadasandhorarios']);
     Route::post('/create', [SchedulesController::class, 'create']);
     Route::patch('/{id}', [SchedulesController::class, 'update']);
     Route::delete('/delete/{id}', [SchedulesController::class, 'delete']);
