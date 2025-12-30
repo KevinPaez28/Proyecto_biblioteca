@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('shifts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('schedules_id')->constrained('schedules');
+            $table->foreignId('schedules_id')->nullable()->constrained('schedules');
             $table->timestamps();
         });
     }

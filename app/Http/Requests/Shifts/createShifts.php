@@ -23,7 +23,7 @@ class createShifts extends FormRequest
     {
         return [
             'nombre'  => 'required|string|min:3',
-            'horario_id' => 'required|numeric|exists:schedules,id',
+            'horario_id' => 'numeric|exists:schedules,id',
         ];
     }
 
@@ -34,7 +34,6 @@ class createShifts extends FormRequest
             'nombre.string'   => 'El nombre debe ser texto.',
             'nombre.min'      => 'El nombre debe tener al menos 3 caracteres.',
 
-            'horario_id.required' => 'El horario es obligatorio.',
             'horario_id.numeric' => 'El horario debe ser numero.',
         ];
     }

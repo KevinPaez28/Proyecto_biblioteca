@@ -75,7 +75,7 @@ class UserService
         }
 
         // Solo admin recibe correo
-        if ($rolModel->name === 'administrador') {
+        if ($rolModel->name === 'Administrador') {
             $user->sendEmailVerificationNotification();
 
             return [

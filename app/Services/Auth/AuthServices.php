@@ -32,7 +32,7 @@ class AuthServices
         }
 
         // VALIDAR QUE SEA ADMIN
-        if (!$user->hasRole('administrador')) {
+        if (!$user->hasRole('Administrador')) {
             return [
                 "error" => true,
                 "code" => 403,
