@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Schedules extends Model
 {
-    protected $fillable = ['start_time', 'end_time'];
+    protected $fillable = ['name', 'start_time', 'end_time'];
 
 
     // Schedules.php

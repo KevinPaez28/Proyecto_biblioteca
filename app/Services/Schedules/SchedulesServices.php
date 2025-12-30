@@ -33,7 +33,7 @@ class SchedulesServices
     {
         $shifts = Shifts::all();
 
-        if (count($shifts) == 0) {
+        if ($shifts->isEmpty()) {
             return [
                 "error" => false,
                 "code" => 200,
@@ -45,14 +45,16 @@ class SchedulesServices
         $data = [];
 
         foreach ($shifts as $shift) {
-            $horario = Schedules::where('id', $shift->schedules_id)->first();
+
+            $horario = Schedules::find($shift->schedules_id);
 
             if ($horario) {
                 $data[] = [
-                    'id' => $shift->id,
-                    'jornada' => $shift->name,
-                    'start_time' => date("g:i A", strtotime($horario->start_time)),
-                    'end_time' => date("g:i A", strtotime($horario->end_time)),
+                    'id'           => $shift->id,
+                    'jornada'      => $shift->name,
+                    'horario'      => $horario->name, 
+                    'start_time'   => date("g:i A", strtotime($horario->start_time)),
+                    'end_time'     => date("g:i A", strtotime($horario->end_time)),
                 ];
             }
         }
@@ -60,16 +62,18 @@ class SchedulesServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Jornadas con horarios obtenidas con éxito",
+            "message" => "Jornadas y horarios obtenidos correctamente",
             "data" => $data
         ];
     }
+
 
     public function CreateSchedules(array $data)
     {
         $schedules = Schedules::Create([
             'start_time' => $data['hora_inicio'],
             'end_time' => $data['hora_fin'],
+            'name' => $data['nombre'],
         ]);
 
         return [

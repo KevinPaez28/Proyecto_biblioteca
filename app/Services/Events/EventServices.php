@@ -3,6 +3,7 @@
 namespace App\Services\Events;
 
 use App\Models\Events\events;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -30,25 +31,27 @@ class EventServices
     }
     public function gettoday()
     {
-        // Traer solo eventos del día de hoy
-        $rooms = events::whereDate('date', today())->get();
+        $today = Carbon::today('America/Bogota');
 
-        if ($rooms->isEmpty()) {
+        $events = events::whereDate('date', $today)->get();
+
+        if ($events->isEmpty()) {
             return [
                 "error" => false,
                 "code" => 200,
                 "message" => "No hay eventos registrados hoy",
-                "data" => $rooms
+                "data" => $events
             ];
         }
 
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Eventos obtenidos con éxito",
-            "data" => $rooms
+            "message" => "Eventos de hoy obtenidos con éxito",
+            "data" => $events
         ];
     }
+
 
 
     public function CreateEvents(array $data)

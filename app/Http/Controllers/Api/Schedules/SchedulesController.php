@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\Schedules;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Schedulesy\createSchedules;
-use App\Http\Requests\Schedulesy\updateSchedules;
+use App\Http\Requests\Schedules\createSchedules;
+use App\Http\Requests\Schedules\updateSchedules;
 use App\Services\Schedules\SchedulesServices;
 use Illuminate\Http\Request;
 

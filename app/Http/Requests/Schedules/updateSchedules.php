@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Schedulesy;
+namespace App\Http\Requests\Schedules;
 
 use Illuminate\Foundation\Http\FormRequest;
 
