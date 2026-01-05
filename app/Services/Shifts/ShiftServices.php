@@ -55,9 +55,9 @@ class ShiftServices
             $data[] = [
                 "id"         => $shift->id,
                 "jornada"    => $shift->name,
-                "horario"    => $horario ? $horario->name : null,
-                "start_time" => $horario ? date("g:i A", strtotime($horario->start_time)) : null,
-                "end_time"   => $horario ? date("g:i A", strtotime($horario->end_time)) : null,
+                "horario"    => $horario ? $horario->name : "Sin horario asignado",
+                "start_time" => $horario ? date("g:i A", strtotime($horario->start_time)) : "-" ,
+                "end_time"   => $horario ? date("g:i A", strtotime($horario->end_time)) :  "-",
             ];
         }
 
@@ -104,8 +104,8 @@ class ShiftServices
                 ];
             }
 
-            $Shifts->update([
-                'nombre' => $data['name'],
+            $Shifts->update(attributes: [
+                'nombre' => $data['nombre'],
                 'schedules_id' => $data['horario_id'],
             ]);
             //hace commit

@@ -24,8 +24,8 @@ class updateShifts extends FormRequest
         $Id = $this->route('id'); // ID de la jornada que se actualiza
 
         return [
-            'nombre' => "required|string|min:3|unique:work_sessions,nombre,{$Id}",
-            'horario_id' => 'required|integer|exists:schedules,id',
+            'nombre' => "required|string|min:3|unique:shifts,name,{$Id}",
+            'horario_id' => "nullable|integer|unique:shifts,schedules_id,{$Id}",
         ];
     }
 
@@ -37,9 +37,8 @@ class updateShifts extends FormRequest
             'nombre.min'      => 'El nombre debe tener al menos 3 caracteres.',
             'nombre.unique'   => 'Este nombre de jornada ya existe.',
 
-            'horario_id.required' => 'El horario es obligatorio.',
             'horario_id.integer'  => 'El horario debe ser un número.',
-            'horario_id.exists'   => 'El horario seleccionado no es válido.',
+            'horario_id.unique' => 'El horario ya está registrado.',
         ];
     }
 }

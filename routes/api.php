@@ -111,7 +111,7 @@ Route::prefix('jornadas')->group(function () {
     Route::get('/', [ShiftsController::class, 'getAll']);
     Route::get('/complete', [ShiftsController::class, 'getjornadas']);
     Route::post('/create', [ShiftsController::class, 'create']);
-    Route::patch('/{id}', [ShiftsController::class, 'update']);
+    Route::patch('edit/{id}', [ShiftsController::class, 'update']);
     Route::delete('/delete/{id}', [ShiftsController::class, 'delete']);
 });
 
