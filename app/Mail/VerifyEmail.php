@@ -3,21 +3,27 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class VerifyEmail extends Mailable
+class UserCreatedMail extends Mailable
 {
     use Queueable, SerializesModels;
+
+    public $first_name, $last_name, $email, $created_at;
 
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct(array $user)
     {
-        //
+        $this->first_name = $user['first_name'];
+        $this->last_name = $user['last_name'];
+        $this->email = $user['email'];
+        $this->created_at = $user['created_at'];
     }
 
     /**
@@ -26,7 +32,7 @@ class VerifyEmail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Verificación de correo',
+            subject: 'Notificación de Usuario Registrado',
         );
     }
 
@@ -36,7 +42,7 @@ class VerifyEmail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.verify-email', 
+            view: 'emails.user_created',
         );
     }
 

@@ -14,24 +14,31 @@ class assitanceServices
 {
     public function getAssistances()
     {
-        $rooms = assitances::all();
-
-        if (count($rooms) == 0)
-            return [
-                "error" => false,
-                "code" => 200,
-                "message" => "No hay asistencias registradas",
-                "data" => $rooms
-            ];
-
+        $data = DB::table('assistances as a')
+            ->leftJoin('profiles as p', 'a.user_id', '=', 'p.usuario_id')
+            ->leftJoin('ficha_user as fu', 'p.usuario_id', '=', 'fu.usuario_id')
+            ->leftJoin('ficha as f', 'fu.ficha_id', '=', 'f.id')
+            ->leftJoin('reasons as r', 'a.reason_id', '=', 'r.id')
+            ->select(
+                DB::raw('COALESCE(f.ficha, "") as Ficha'),
+                DB::raw('COALESCE(p.name, "") as FirstName'),
+                DB::raw('COALESCE(p.last_name, "") as LastName'),
+                'a.created_at as DateTime',
+                DB::raw('COALESCE(r.name, "") as Reason')
+            )
+            ->get();
 
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Asistencias obtenidas con éxito",
-            "data" => $rooms
+            "message" => $data->isEmpty()
+                ? "No hay asistencias registradas"
+                : "Asistencias obtenidas con éxito",
+            "data" => $data
         ];
     }
+
+
     public function getTotalByDay()
     {
         $total = assitances::whereDate('created_at', today())->count();

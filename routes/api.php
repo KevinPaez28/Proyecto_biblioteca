@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\assistances\assitancesController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Documents\DocumentController;
+use App\Http\Controllers\Api\Email\EmailVerificationController;
 use App\Http\Controllers\Api\Events\EventController;
 use App\Http\Controllers\Api\Ficha\FichaController;
 use App\Http\Controllers\Api\History\HistoryController;
@@ -31,6 +32,18 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/validate', [PasswordResetController::class, 'validateToken']);
 Route::post('/Reset-password', [PasswordResetController::class, 'forgotPassword']);
 Route::post('/Reset-password/change', [PasswordResetController::class, 'resetPassword']);
+
+Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
+    ->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware('signed')
+    ->name('verification.verify');
+
+Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+    ->middleware('throttle:verification')
+    ->name('verification.send');
+
 
 // CRUD Usuarios
 Route::prefix('user')->group(function () {

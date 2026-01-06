@@ -23,10 +23,19 @@ class assitances extends Model
     {
         return $this->belongsTo(Shifts::class, 'working_day_id'); // Cada asistencia pertenece a una jornada
     }
+     public function workingDay()
+     {
+         return $this->belongsTo(Shifts::class, 'working_day_id');
+     }
+ 
+     public function reason()
+     {
+         return $this->belongsTo(reasons::class, 'reason_id');
+     }
 
     public function schedule()
     {
-        return $this->belongsTo(Schedules::class); // Cada asistencia puede pertenecer a un horario
+        return $this->belongsTo(Schedules::class); 
     }
     public function event()
     {
