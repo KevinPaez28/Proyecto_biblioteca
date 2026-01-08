@@ -19,9 +19,39 @@ class assitancesController extends Controller
         $this->assitancesServices = $assistancesservices;
     }
 
-    public function getAll()
+    public function getAll(Request $request)
     {
-        $response = $this->assitancesServices->getAssistances();
+        $filters = $request->only([
+            'nombre',
+            'apellido',
+            'documento',
+            'ficha',
+            'fecha',
+            'motivo',
+            'rol'
+        ]);
+
+        $response = $this->assitancesServices->getAssistances($filters);
+
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
+    }
+
+
+    public function getByMonth()
+    {
+        $response = $this->assitancesServices->getAssistancesByMonth();
+
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
@@ -29,22 +59,11 @@ class assitancesController extends Controller
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
-    public function getByMonth()
-    {
-        $response = $this->assitancesServices->getAssistancesByMonth();
-
-        
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
-
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
-        }
-
     public function getByEvent()
     {
         $response = $this->assitancesServices->getAssistancesByEvent();
 
-        
+
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
 
@@ -86,7 +105,7 @@ class assitancesController extends Controller
     {
         $response = $this->assitancesServices->getTotalByDay();
 
-        
+
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
 
@@ -97,7 +116,7 @@ class assitancesController extends Controller
     {
         $response = $this->assitancesServices->getTotalByWeek();
 
-       
+
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
 
@@ -108,7 +127,7 @@ class assitancesController extends Controller
     {
         $response = $this->assitancesServices->getTotalByMonth();
 
-        
+
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
 
@@ -119,7 +138,7 @@ class assitancesController extends Controller
     {
         $response = $this->assitancesServices->getTotalGraduates();
 
-      
+
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);
 

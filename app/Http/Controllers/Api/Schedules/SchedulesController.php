@@ -29,15 +29,27 @@ class SchedulesController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    public function jornadasandhorarios()
+
+    public function jornadasandhorarios(Request $request)
     {
-        $response = $this->ScheduleServices->getJornadasAndHorarios();
+        $search = $request->query('search');
 
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
+        $response = $this->ScheduleServices->getJornadasAndHorarios($search);
 
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
     }
+
 
     public function create(createSchedules $request)
     {

@@ -12,21 +12,59 @@ use Illuminate\Support\Facades\Log;
 
 class assitanceServices
 {
-    public function getAssistances()
+    public function getAssistances(array $filters = [])
     {
-        $data = DB::table('assistances as a')
-            ->leftJoin('profiles as p', 'a.user_id', '=', 'p.usuario_id')
+        $query = DB::table('assistances as a')
+            ->leftJoin('users as u', 'a.user_id', '=', 'u.id')
+            ->leftJoin('profiles as p', 'u.id', '=', 'p.usuario_id')
             ->leftJoin('ficha_user as fu', 'p.usuario_id', '=', 'fu.usuario_id')
             ->leftJoin('ficha as f', 'fu.ficha_id', '=', 'f.id')
             ->leftJoin('reasons as r', 'a.reason_id', '=', 'r.id')
+            ->leftJoin('model_has_roles as mr', function ($join) {
+                $join->on('u.id', '=', 'mr.model_id')
+                    ->where('mr.model_type', 'App\\Models\\User\\User');
+            })
+            ->leftJoin('roles as ro', 'mr.role_id', '=', 'ro.id')
             ->select(
                 DB::raw('COALESCE(f.ficha, "") as Ficha'),
+                DB::raw('COALESCE(u.document, "") as Documento'),
                 DB::raw('COALESCE(p.name, "") as FirstName'),
                 DB::raw('COALESCE(p.last_name, "") as LastName'),
                 'a.created_at as DateTime',
-                DB::raw('COALESCE(r.name, "") as Reason')
-            )
-            ->get();
+                DB::raw('COALESCE(r.name, "") as Reason'),
+                DB::raw('COALESCE(ro.name, "") as Role')
+            );
+
+        // 🔍 FILTROS
+        if (!empty($filters['nombre'])) {
+            $query->where('p.name', 'like', '%' . $filters['nombre'] . '%');
+        }
+
+        if (!empty($filters['apellido'])) {
+            $query->where('p.last_name', 'like', '%' . $filters['apellido'] . '%');
+        }
+
+        if (!empty($filters['documento'])) {
+            $query->where('u.document', 'like', '%' . $filters['documento'] . '%');
+        }
+
+        if (!empty($filters['ficha'])) {
+            $query->where('f.ficha', 'like', '%' . $filters['ficha'] . '%');
+        }
+
+        if (!empty($filters['fecha'])) {
+            $query->whereDate('a.created_at', $filters['fecha']);
+        }
+
+        if (!empty($filters['motivo'])) {
+            $query->where('r.name', $filters['motivo']);
+        }
+
+        if (!empty($filters['rol'])) {
+            $query->where('ro.name', $filters['rol']);
+        }
+
+        $data = $query->get();
 
         return [
             "error" => false,

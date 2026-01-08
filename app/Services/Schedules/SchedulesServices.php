@@ -29,7 +29,7 @@ class SchedulesServices
             "data" => $schedules
         ];
     }
-    public function getJornadasAndHorarios()
+    public function getJornadasAndHorarios($search = null)
     {
         $shifts = Shifts::all();
 
@@ -43,20 +43,31 @@ class SchedulesServices
         }
 
         $data = [];
+        $searchLower = $search ? strtolower($search) : null;
 
         foreach ($shifts as $shift) {
 
             $horario = Schedules::find($shift->schedules_id);
 
-            if ($horario) {
-                $data[] = [
-                    'id'           => $shift->id,
-                    'jornada'      => $shift->name,
-                    'horario'      => $horario->name, 
-                    'start_time'   => date("g:i A", strtotime($horario->start_time)),
-                    'end_time'     => date("g:i A", strtotime($horario->end_time)),
-                ];
+            if (!$horario) continue;
+
+            // 🔍 FILTRO BACKEND
+            if ($searchLower) {
+                if (
+                    !str_contains(strtolower($horario->name), $searchLower) &&
+                    !str_contains(strtolower($shift->name), $searchLower)
+                ) {
+                    continue;
+                }
             }
+
+            $data[] = [
+                'id'         => $shift->id,
+                'jornada'    => $shift->name,
+                'horario'    => $horario->name,
+                'start_time' => date("g:i A", strtotime($horario->start_time)),
+                'end_time'   => date("g:i A", strtotime($horario->end_time)),
+            ];
         }
 
         return [
