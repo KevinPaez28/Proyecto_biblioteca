@@ -11,7 +11,7 @@ class updateReasons extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,7 @@ class updateReasons extends FormRequest
         $Id = $this->route('id'); // ID de la jornada que se actualiza
 
         return [
-            'nombre' => "required|string|unique:reasons,nombre,{$Id}",
+            'nombre' => "required|string|unique:reasons,name,{$Id}",
             'descripcion' => 'nullable|string|',
             'estados_id' => 'required|exists:states_Reason,id',
         ];
@@ -40,8 +40,8 @@ class updateReasons extends FormRequest
             'descripcion.string' => 'La Descripción debe ser un texto válido.',
             'descripcion.max' => 'La Descripción no debe exceder los 500 caracteres.',
 
-            'estado_id.required' => 'El campo Estado es obligatorio.',
-            'estado_id.exists' => 'El Estado seleccionado no es válido.',
+            'estados_id.required' => 'El campo Estado es obligatorio.',
+            'estados_id.exists' => 'El Estado seleccionado no es válido.',
         ];
     }
 }

@@ -11,16 +11,16 @@ class ReasonServices
 
     public function getReasons()
     {
-        $reasons = reasons::all();
+        $reasons = reasons::with('state:id,name')->get();
 
-        if (count($reasons) == 0)
+        if ($reasons->isEmpty()) {
             return [
                 "error" => false,
                 "code" => 200,
                 "message" => "No hay motivos registrados",
                 "data" => $reasons
             ];
-
+        }
 
         return [
             "error" => false,
@@ -109,15 +109,24 @@ class ReasonServices
 
     public function deleteReasons($id)
     {
-        $reasons = reasons::find($id);
+        $reasons = Reasons::find($id);
 
-
-        if (!$reasons)
+        if (!$reasons) {
             return [
                 "error" => true,
                 "code" => 404,
-                "message" => "EL motivo no existe",
+                "message" => "El motivo no existe",
             ];
+        }
+
+        // 👀 Verificar si tiene asistencias asociadas
+        if ($reasons->assistances()->exists()) {
+            return [
+                "error" => true,
+                "code" => 409,
+                "message" => "No se puede eliminar el motivo porque tiene asistencias asociadas",
+            ];
+        }
 
         $reasons->delete();
 

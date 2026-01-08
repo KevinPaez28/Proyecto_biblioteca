@@ -41,4 +41,6 @@ class assitances extends Model
     {
         return $this->belongsTo(events::class, 'event_id');
     }
+
+    
 }

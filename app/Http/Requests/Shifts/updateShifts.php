@@ -26,6 +26,7 @@ class updateShifts extends FormRequest
         return [
             'nombre' => "required|string|min:3|unique:shifts,name,{$Id}",
             'horario_id' => "nullable|integer|unique:shifts,schedules_id,{$Id}",
+            
         ];
     }
 
