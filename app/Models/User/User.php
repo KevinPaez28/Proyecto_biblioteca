@@ -5,6 +5,7 @@ namespace App\Models\User;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Models\assitances\assitances;
+use App\Models\Ficha\Ficha;
 use App\Models\Profiles\Profiles;
 use App\Models\UserstatusServices\user_statuses;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -64,5 +65,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public function assistances(): HasMany
     {
         return $this->hasMany(assitances::class, 'user_id');
+    }
+    public function fichas()
+    {
+        return $this->belongsToMany(Ficha::class,'ficha_user','usuario_id','ficha_id');
     }
 }

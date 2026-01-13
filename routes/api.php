@@ -55,7 +55,7 @@ Route::prefix('EstadoUsuarios')->group(function () {
 });
 Route::prefix('user')->group(function () {
     Route::get('/', [UserController::class, 'getAll']);
-    Route::get('/apprentices', [UserController::class, 'apprentice']);
+    Route::get('/aprendices', [UserController::class, 'apprentice']);
     Route::get('/search', [UserController::class, 'getByinformation']);
     Route::post('/create', [UserController::class, 'create']);
     Route::patch('/{id}', [UserController::class, 'update']);
@@ -68,7 +68,6 @@ Route::prefix('roles')->group(function () {
     Route::patch('/{id}', [rolesController::class, 'update']);
     Route::delete('/delete/{id}', [rolesController::class, 'delete']);
 });
-
 
 // CRUD Programas
 Route::prefix('programa')->group(function () {

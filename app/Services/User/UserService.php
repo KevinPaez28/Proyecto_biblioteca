@@ -146,53 +146,59 @@ class UserService
                     'email' => $user->email,
                     'phone_number' => $user->perfil->phone ?? '',
                     'rol' => $user->roles->pluck('name')->implode(', '),
-                    'estado' => $user->status->name ?? '',
+                    'estado' => $user->status->status ?? '',
                 ];
             })
         ];
     }
-
     public function getAllApprentices(array $filters = [])
     {
-        $query = User::with(['perfil', 'roles', 'status'])
+        $query = User::with(['perfil', 'roles', 'status', 'fichas.programa'])
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Aprendiz');
             })
             ->orderBy('id');
-
+    
         // ================= FILTROS =================
-
+    
         if (!empty($filters['nombre'])) {
             $query->whereHas('perfil', function ($q) use ($filters) {
                 $q->where('name', 'like', '%' . $filters['nombre'] . '%');
             });
         }
-
+    
         if (!empty($filters['apellido'])) {
             $query->whereHas('perfil', function ($q) use ($filters) {
                 $q->where('last_name', 'like', '%' . $filters['apellido'] . '%');
             });
         }
-
+    
         if (!empty($filters['documento'])) {
             $query->where('document', 'like', '%' . $filters['documento'] . '%');
         }
-
+    
         if (!empty($filters['estado'])) {
             $query->whereHas('status', function ($q) use ($filters) {
                 $q->where('name', $filters['estado']);
             });
         }
-
-        // (Opcional) filtro por ficha si existe relación o campo
+    
+        // 🔥 FILTRO POR NÚMERO DE FICHA
         if (!empty($filters['ficha'])) {
-            $query->whereHas('perfil', function ($q) use ($filters) {
+            $query->whereHas('fichas', function ($q) use ($filters) {
                 $q->where('ficha', 'like', '%' . $filters['ficha'] . '%');
             });
         }
-
+    
+        // 🔥 FILTRO POR PROGRAMA
+        if (!empty($filters['programa'])) {
+            $query->whereHas('fichas.programa', function ($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['programa'] . '%');
+            });
+        }
+    
         $apprentices = $query->get();
-
+    
         return [
             "error" => false,
             "code" => 200,
@@ -200,6 +206,9 @@ class UserService
                 ? "No hay aprendices registrados"
                 : "Aprendices obtenidos con éxito",
             "data" => $apprentices->map(function ($user) {
+    
+                $ficha = $user->fichas->first();
+    
                 return [
                     'id' => $user->id,
                     'document' => $user->document,
@@ -207,13 +216,16 @@ class UserService
                     'last_name' => $user->perfil->last_name ?? '',
                     'email' => $user->email,
                     'phone_number' => $user->perfil->phone ?? '',
-                    'ficha' => $user->perfil->ficha ?? '',
+                    'ficha' => $ficha->ficha ?? '',
+                    'programa' => $ficha->programa->training_program ?? '',
                     'rol' => 'Aprendiz',
-                    'estado' => $user->status->name ?? '',
+                    'estado' => $user->status->status ?? '',
                 ];
             })
         ];
     }
+    
+
 
     public function updateUser(array $data, $id)
     {

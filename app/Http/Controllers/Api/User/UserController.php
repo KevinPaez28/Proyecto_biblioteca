@@ -65,7 +65,7 @@ class UserController extends Controller
             'estado'
         ]);
 
-        $response = $this->userService->getAllInformation($filters);
+        $response = $this->userService->getAllApprentices($filters);
 
         if ($response['error']) {
             return ResponseFormatter::error(
