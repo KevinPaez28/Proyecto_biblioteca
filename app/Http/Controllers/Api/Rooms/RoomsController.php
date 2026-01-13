@@ -19,16 +19,30 @@ class RoomsController extends Controller
         $this->RoomsServices = $roomsservices;
     }
 
-    public function getAll()
+    public function getAll(Request $request)
     {
-        $response = $this->RoomsServices->getrooms();
+        $filters = $request->only([
+            'nombre',
+            'descripcion',
+            'estado'
+        ]);
 
+        $response = $this->RoomsServices->getRooms($filters);
 
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
 
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
     }
+
     public function create(createRooms $request)
     {
         $data = $request->validated();

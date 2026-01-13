@@ -9,26 +9,75 @@ use Illuminate\Support\Facades\DB;
 
 class EventServices
 {
-    public function getEvents()
+    public function getEvents(array $filters = [])
     {
-        $rooms = events::all();
+        $query = DB::table('events as e')
+            ->leftJoin('rooms as r', 'e.room_id', '=', 'r.id')
+            ->leftJoin('state_events as se', 'e.state_event_id', '=', 'se.id')
+            ->select(
+                'e.id',
+                'e.name',
+                'e.mandated',
+                'e.date',
+                'r.id as room_id',
+                'r.name as room_name',
+                'se.id as state_id',
+                'se.name as state_name'
+            );
 
-        if (count($rooms) == 0)
+        // 🔍 FILTROS
+
+        if (!empty($filters['nombre'])) {
+            $query->where('e.name', 'like', '%' . $filters['nombre'] . '%');
+        }
+
+        if (!empty($filters['estado'])) {
+            $query->where('se.id', $filters['estado']);
+        }
+        if (!empty($filters['encargado'])) {
+            $query->where('e.mandated', 'like', '%' . $filters['encargado'] . '%');
+        }
+
+        if (!empty($filters['fecha'])) {
+            $query->whereDate('e.date', $filters['fecha']);
+        }
+
+        if (!empty($filters['sala'])) {
+            $query->where('r.id', $filters['sala']);
+        }
+
+        $data = $query->get();
+
+        $data = $data->map(function ($item) {
             return [
-                "error" => false,
-                "code" => 200,
-                "message" => "No hay eventos registrado",
-                "data" => $rooms
+                'id' => $item->id,
+                'name' => $item->name,
+                'mandated' => $item->mandated,
+                'date' => $item->date,
+                'room' => [
+                    'id' => $item->room_id,
+                    'name' => $item->room_name,
+                ],
+                'state' => [
+                    'id' => $item->state_id,
+                    'name' => $item->state_name,
+                ]
             ];
-
+        });
 
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Eventos obtenidos con éxito",
-            "data" => $rooms
+            "message" => $data->isEmpty()
+                ? "No hay eventos registrados"
+                : "Eventos obtenidos con éxito",
+            "data" => $data
         ];
     }
+
+
+
+
     public function gettoday()
     {
         $today = Carbon::today('America/Bogota');

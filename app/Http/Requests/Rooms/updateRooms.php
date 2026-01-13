@@ -24,7 +24,7 @@ class updateRooms extends FormRequest
         $Id = $this->route('id'); // ID de la jornada que se actualiza
 
         return [
-            'nombre' => "required|string|min:3|unique:rooms,nombre,{$Id}",
+            'nombre' => "required|string|min:3|unique:rooms,name,{$Id}",
             'descripcion'   => 'required|string',
             'estado_sala'   => 'required|exists:state_rooms,id',
         ];

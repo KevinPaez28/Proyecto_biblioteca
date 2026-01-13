@@ -24,23 +24,43 @@ class updateRequest extends FormRequest
         $userId = $this->route('id');
 
         return [
+            // USUARIO
             'documento' => "required|string|max:10|unique:users,document,{$userId}",
-            'estado_id' => 'required|integer'
+            'correo'    => 'required|email|max:255',
+            'status_id' => 'required|integer|exists:user_statuses,id',
+            'rol_id'    => 'required|integer|exists:roles,id',
+
+            // PERFIL
+            'nombres'   => 'required|string|max:50',
+            'apellidos' => 'required|string|max:50',
+            'telefono'  => 'required|string|min:10|max:10',
         ];
     }
 
+    /**
+     * Mensajes personalizados
+     */
     public function messages(): array
     {
         return [
             'documento.required' => 'El documento es obligatorio.',
-            'documento.string' => 'El documento debe ser texto.',
-            'documento.max' => 'El documento no puede superar los 10 caracteres.',
-            'documento.unique' => 'Este documento ya se encuentra registrado.',
+            'documento.unique'   => 'Este documento ya se encuentra registrado.',
+            'documento.max'      => 'El documento no puede tener más de 10 caracteres.',
 
-            'contrasena.min' => 'La contraseña debe tener mínimo 8 caracteres.',
+            'correo.required'    => 'El correo es obligatorio.',
+            'correo.email'       => 'El correo no tiene un formato válido.',
 
-            'estado_id.required' => 'El estado es obligatorio.',
-            'estado_id.integer' => 'El estado debe ser un número.',
+            'status_id.required' => 'El estado es obligatorio.',
+            'status_id.exists'   => 'El estado seleccionado no es válido.',
+
+            'rol_id.required'    => 'El rol es obligatorio.',
+            'rol_id.exists'      => 'El rol seleccionado no es válido.',
+
+            'nombres.required'   => 'El nombre es obligatorio.',
+            'apellidos.required' => 'El apellido es obligatorio.',
+            'telefono.required'  => 'El teléfono es obligatorio.',
+            'telefono.min'       => 'El teléfono debe tener 10 dígitos.',
+            'telefono.max'       => 'El teléfono debe tener 10 dígitos.',
         ];
     }
 }

@@ -8,26 +8,60 @@ use Illuminate\Support\Facades\DB;
 
 class RoomServices
 {
-    public function getrooms()
+    public function getRooms(array $filters = [])
     {
-        $rooms = rooms::all();
+        $query = DB::table('rooms as r')
+            ->leftJoin('state_rooms as sr', 'r.state_room_id', '=', 'sr.id')
+            ->select(
+                'r.id',
+                'r.name',
+                'r.description',
+                'sr.id as state_id',
+                'sr.name as state_name'
+            );
 
-        if (count($rooms) == 0)
+        // 🔍 FILTROS
+        if (!empty($filters['nombre'])) {
+            $query->where('r.name', 'like', '%' . $filters['nombre'] . '%');
+        }
+
+        if (!empty($filters['descripcion'])) {
+            $query->where('r.description', 'like', '%' . $filters['descripcion'] . '%');
+        }
+
+        if (!empty($filters['estado'])) {
+            $query->where('sr.id', $filters['estado']);
+        }
+
+        $data = $query->get();
+
+        // 🧠 ARMAMOS LA ESTRUCTURA QUE EL FRONT YA USA
+        $data = $data->map(function ($item) {
             return [
-                "error" => false,
-                "code" => 200,
-                "message" => "No hay salas registradas",
-                "data" => $rooms
+                'id' => $item->id,
+                'name' => $item->name,
+                'description' => $item->description,
+                'state' => [
+                    'id' => $item->state_id,
+                    'name' => $item->state_name,
+                ]
             ];
-
+        });
 
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Salas obtenidas con éxito",
-            "data" => $rooms
+            "message" => $data->isEmpty()
+                ? "No hay salas registradas"
+                : "Salas obtenidas con éxito",
+            "data" => $data
         ];
     }
+
+
+
+
+
     public function Createrooms(array $data)
     {
         $rooms = rooms::Create([
@@ -63,7 +97,7 @@ class RoomServices
             $rooms->update([
                 'name' => $data['nombre'],
                 'description' => $data['descripcion'],
-                'state_room_id' => $data['estado_id'],
+                'state_room_id' => $data['estado_sala'],
             ]);
             //hace commit
             DB::commit();
@@ -87,17 +121,26 @@ class RoomServices
 
     public function deleterooms($id)
     {
-        $rooms = rooms::find($id);
+        $room = Rooms::withCount('events')->find($id);
 
-
-        if (!$rooms)
+        if (!$room) {
             return [
                 "error" => true,
                 "code" => 404,
                 "message" => "La sala no existe",
             ];
+        }
 
-        $rooms->delete();
+        // 🔥 Si tiene eventos asociados, NO se elimina
+        if ($room->events_count > 0) {
+            return [
+                "error" => true,
+                "code" => 400,
+                "message" => "No se puede eliminar la sala porque tiene eventos asociados",
+            ];
+        }
+
+        $room->delete();
 
         return [
             "error" => false,
@@ -106,4 +149,3 @@ class RoomServices
         ];
     }
 }
-    

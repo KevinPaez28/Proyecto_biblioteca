@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Events\createEvent;
 use App\Http\Requests\Events\updateEvent;
 use App\Services\Events\EventServices;
+use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
@@ -18,14 +19,30 @@ class EventController extends Controller
         $this->EventServices = $Eventservices;
     }
 
-    public function getAll()
+    public function getAll(Request $request)
     {
-        $response = $this->EventServices->getEvents();
+        $filters = $request->only([
+            'nombre',
+            'encargado',
+            'estado',
+            'fecha',
+            'sala'
+        ]);
 
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
+        $response = $this->EventServices->getEvents($filters);
 
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
     }
 
     public function gettoday()

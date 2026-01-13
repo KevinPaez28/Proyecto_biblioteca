@@ -52,8 +52,7 @@ class UserService
             'phone'      => $data['telefono'],
         ]);
 
-        // ======= CORRECCIÓN =======
-        $rolId = $data['rol']; // viene del formulario como ID
+        $rolId = $data['rol'];
         $rolModel = Role::find($rolId);
 
         if (!$rolModel) {
@@ -95,44 +94,133 @@ class UserService
     }
 
 
-    public function getAllInformation()
+    public function getAllInformation(array $filters = [])
     {
-        $users = User::with('profile')->orderBy('id')->get();
+        $query = User::with(['perfil', 'roles', 'status'])
+            ->orderBy('id');
 
-        if ($users->isEmpty()) {
-            return [
-                "error" => false,
-                "code" => 200,
-                "message" => "No hay usuarios registrados",
-                "data" => []
-            ];
+        // FILTROS
+        if (!empty($filters['nombre'])) {
+            $query->whereHas('perfil', function ($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['nombre'] . '%');
+            });
         }
 
-        $data = $users->map(function ($user) {
-            return [
-                'id' => $user->id,
-                'document' => $user->document,
-                'first_name' => optional($user->profile)->first_name,
-                'last_name' => optional($user->profile)->last_name,
-                'email' => optional($user->profile)->email,
-                'phone_number' => optional($user->profile)->phone_number,
-            ];
-        });
+        if (!empty($filters['apellido'])) {
+            $query->whereHas('perfil', function ($q) use ($filters) {
+                $q->where('last_name', 'like', '%' . $filters['apellido'] . '%');
+            });
+        }
+
+        if (!empty($filters['documento'])) {
+            $query->where('document', 'like', '%' . $filters['documento'] . '%');
+        }
+
+        if (!empty($filters['rol'])) {
+            $query->whereHas('roles', function ($q) use ($filters) {
+                $q->where('name', $filters['rol']);
+            });
+        }
+
+        if (!empty($filters['estado'])) {
+            $query->whereHas('status', function ($q) use ($filters) {
+                $q->where('name', $filters['estado']);
+            });
+        }
+
+
+        $users = $query->get();
 
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Información obtenida con éxito",
-            "data" => $data
+            "message" => $users->isEmpty()
+                ? "No hay usuarios registrados"
+                : "Usuarios obtenidos con éxito",
+            "data" => $users->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'document' => $user->document,
+                    'first_name' => $user->perfil->name ?? '',
+                    'last_name' => $user->perfil->last_name ?? '',
+                    'email' => $user->email,
+                    'phone_number' => $user->perfil->phone ?? '',
+                    'rol' => $user->roles->pluck('name')->implode(', '),
+                    'estado' => $user->status->name ?? '',
+                ];
+            })
         ];
     }
+
+    public function getAllApprentices(array $filters = [])
+    {
+        $query = User::with(['perfil', 'roles', 'status'])
+            ->whereHas('roles', function ($q) {
+                $q->where('name', 'Aprendiz');
+            })
+            ->orderBy('id');
+
+        // ================= FILTROS =================
+
+        if (!empty($filters['nombre'])) {
+            $query->whereHas('perfil', function ($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['nombre'] . '%');
+            });
+        }
+
+        if (!empty($filters['apellido'])) {
+            $query->whereHas('perfil', function ($q) use ($filters) {
+                $q->where('last_name', 'like', '%' . $filters['apellido'] . '%');
+            });
+        }
+
+        if (!empty($filters['documento'])) {
+            $query->where('document', 'like', '%' . $filters['documento'] . '%');
+        }
+
+        if (!empty($filters['estado'])) {
+            $query->whereHas('status', function ($q) use ($filters) {
+                $q->where('name', $filters['estado']);
+            });
+        }
+
+        // (Opcional) filtro por ficha si existe relación o campo
+        if (!empty($filters['ficha'])) {
+            $query->whereHas('perfil', function ($q) use ($filters) {
+                $q->where('ficha', 'like', '%' . $filters['ficha'] . '%');
+            });
+        }
+
+        $apprentices = $query->get();
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => $apprentices->isEmpty()
+                ? "No hay aprendices registrados"
+                : "Aprendices obtenidos con éxito",
+            "data" => $apprentices->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'document' => $user->document,
+                    'first_name' => $user->perfil->name ?? '',
+                    'last_name' => $user->perfil->last_name ?? '',
+                    'email' => $user->email,
+                    'phone_number' => $user->perfil->phone ?? '',
+                    'ficha' => $user->perfil->ficha ?? '',
+                    'rol' => 'Aprendiz',
+                    'estado' => $user->status->name ?? '',
+                ];
+            })
+        ];
+    }
+
     public function updateUser(array $data, $id)
     {
         try {
             DB::beginTransaction();
 
-            // Buscar el programa
-            $user = User::find($id);
+            $user = User::with(['perfil', 'roles'])->find($id);
 
             if (!$user) {
                 return [
@@ -142,11 +230,32 @@ class UserService
                 ];
             }
 
+            // ================= USER =================
             $user->update([
-                'document' => $data['documento'],
-                'status_id' => $data['estado_id'],
+                'document'  => $data['documento'],
+                'email'     => $data['correo'],
+                'status_id' => $data['status_id'],
             ]);
-            //hace commit
+
+            // ================= PERFIL =================
+            if ($user->perfil) {
+                $user->perfil->update([
+                    'name'      => $data['nombres'],
+                    'last_name' => $data['apellidos'],
+                    'phone'     => $data['telefono'],
+                ]);
+            }
+
+            // ================= ROL =================
+            if (!empty($data['rol_id'])) {
+                $rol = Role::find($data['rol_id']);
+
+                if ($rol) {
+                    // elimina roles actuales y asigna el nuevo
+                    $user->syncRoles([$rol->name]);
+                }
+            }
+
             DB::commit();
 
             return [
@@ -156,8 +265,8 @@ class UserService
                 "data" => $user
             ];
         } catch (Exception $e) {
-            //si genero error devuelve a la ultimo cambio de base de datos
-            DB::rollback();
+            DB::rollBack();
+
             return [
                 "error" => true,
                 "code" => 500,
@@ -166,23 +275,33 @@ class UserService
         }
     }
 
-    public function deleteCity($id)
-    {
-        $Users = User::find($id);
 
-        if (!$Users)
+    public function deleteUser($id)
+    {
+        $user = User::withCount('assistances')->find($id);
+
+        if (!$user) {
             return [
                 "error" => true,
                 "code" => 404,
                 "message" => "El usuario no existe",
             ];
+        }
 
-        $Users->delete();
+        if ($user->assistances_count > 0) {
+            return [
+                "error" => true,
+                "code" => 409,
+                "message" => "No se puede eliminar el usuario porque tiene asistencias registradas",
+            ];
+        }
+
+        $user->delete();
 
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Usuario eliminada con éxito",
+            "message" => "Usuario eliminado con éxito",
         ];
     }
 }

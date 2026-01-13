@@ -30,15 +30,55 @@ class UserController extends Controller
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
-    public function getByinformation()
+    public function getByinformation(Request $request)
     {
+        $filters = $request->only([
+            'nombre',
+            'apellido',
+            'documento',
+            'rol',
+            'estado'
+        ]);
 
-        $response = $this->userService->getAllInformation();
+        $response = $this->userService->getAllInformation($filters);
 
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
 
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
+    }
+    public function apprentice(Request $request)
+    {
+        $filters = $request->only([
+            'nombre',
+            'apellido',
+            'documento',
+            'rol',
+            'estado'
+        ]);
+
+        $response = $this->userService->getAllInformation($filters);
+
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
     }
 
     public function create(UserRequest $request)
@@ -67,7 +107,7 @@ class UserController extends Controller
 
     public function delete(string $id)
     {
-        $response = $this->userService->deleteCity($id);
+        $response = $this->userService->deleteUser($id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);

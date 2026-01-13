@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\Shifts\ShiftsController;
 use App\Http\Controllers\Api\state_events\stateEventsController;
 use App\Http\Controllers\Api\states_rooms\StatesRoomsController;
 use App\Http\Controllers\Api\User\UserController;
+use App\Http\Controllers\Api\UserStatus\UserStatusController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -46,8 +47,15 @@ Route::post('/email/verification-notification', [EmailVerificationController::cl
 
 
 // CRUD Usuarios
+Route::prefix('EstadoUsuarios')->group(function () {
+    Route::get('/', [UserStatusController::class, 'getAll']);
+    Route::post('/create', [UserStatusController::class, 'create']);
+    Route::patch('/{id}', [UserStatusController::class, 'update']);
+    Route::delete('/delete/{id}', [UserStatusController::class, 'delete']);
+});
 Route::prefix('user')->group(function () {
     Route::get('/', [UserController::class, 'getAll']);
+    Route::get('/apprentices', [UserController::class, 'apprentice']);
     Route::get('/search', [UserController::class, 'getByinformation']);
     Route::post('/create', [UserController::class, 'create']);
     Route::patch('/{id}', [UserController::class, 'update']);
@@ -152,7 +160,6 @@ Route::prefix('estadoEventos')->group(function () {
     Route::delete('/delete/{id}', [stateEventsController::class, 'delete']);
 });
 
-// CRUD Estados Salas (solo uno!)
 Route::prefix('estadosalas')->group(function () {
     Route::get('/', [StatesRoomsController::class, 'getAll']);
     Route::post('/create', [StatesRoomsController::class, 'create']);
