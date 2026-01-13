@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api\User;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ImportApprentice\ImportApprenticeRequest;
 use App\Http\Requests\User\updateRequest;
 use App\Http\Requests\User\UserRequest;
+use App\Imports\ApprenticesImport;
+use App\Services\ImportExcel\ImportExcelService;
 use App\Services\User\UserService;
 use Illuminate\Http\Request;
 
@@ -13,9 +16,12 @@ class UserController extends Controller
 {
     protected $userService;
 
-    public function __construct(UserService $userservice)
+    protected $importService;
+    
+    public function __construct(UserService $userservice, ImportExcelService $importService)
     {
-
+        
+        $this->importService = $importService;
         $this->userService = $userservice;
     }
 
@@ -113,5 +119,28 @@ class UserController extends Controller
             return ResponseFormatter::error($response['message'], $response['code']);
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+    }
+
+
+    public function import(ImportApprenticeRequest $request)
+    {
+        $data = $request->validated();
+
+        // Llamamos al servicio de importación
+        $response = $this->importService->importApprentices($data);
+
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code'],
+                $response['errors'] ?? []
+            );
+        }
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
     }
 }
