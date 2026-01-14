@@ -2,11 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Database\Seeders\Permissions\PermissionSeeder;
 use Database\Seeders\Role\RoleSeeder;
 use Database\Seeders\RolePermission\RolePermissionSeeder;
 use Database\Seeders\shifts\shiftSeeder;
+use Database\Seeders\Status_events\events_status;
+use Database\Seeders\Status_reason\reason_status;
+use Database\Seeders\Status_rooms\events_rooms;
+use Database\Seeders\Status_user\status_user;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -24,6 +27,12 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RolePermissionSeeder::class,
             shiftSeeder::class,
+            events_status::class,
+            reason_status::class,
+            events_rooms::class,
+            status_user::class,
+
         ]);
+
     }
 }

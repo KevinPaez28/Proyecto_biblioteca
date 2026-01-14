@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Api\User;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ImportApprentice\ImportApprenticeRequest;
+use App\Http\Requests\Imports\ImportApprenticeRequest;
 use App\Http\Requests\User\updateRequest;
 use App\Http\Requests\User\UserRequest;
-use App\Imports\ApprenticesImport;
 use App\Services\ImportExcel\ImportExcelService;
 use App\Services\User\UserService;
 use Illuminate\Http\Request;
@@ -17,10 +16,10 @@ class UserController extends Controller
     protected $userService;
 
     protected $importService;
-    
+
     public function __construct(UserService $userservice, ImportExcelService $importService)
     {
-        
+
         $this->importService = $importService;
         $this->userService = $userservice;
     }
@@ -62,30 +61,34 @@ class UserController extends Controller
         );
     }
     public function apprentice(Request $request)
-    {
-        $filters = $request->only([
-            'nombre',
-            'apellido',
-            'documento',
-            'rol',
-            'estado'
-        ]);
+{
+    $filters = $request->only([
+        'nombre',
+        'apellido',
+        'documento',
+        'rol',
+        'estados',
+        'ficha',
+        'programa'
+    ]);
 
-        $response = $this->userService->getAllApprentices($filters);
+    $response = $this->userService->getAllApprentices($filters);
 
-        if ($response['error']) {
-            return ResponseFormatter::error(
-                $response['message'],
-                $response['code']
-            );
-        }
-
-        return ResponseFormatter::success(
+    if ($response['error']) {
+        return ResponseFormatter::error(
             $response['message'],
-            $response['code'],
-            $response['data'] ?? []
+            $response['code']
         );
     }
+
+    // ✅ Enviar data y meta juntos
+    return ResponseFormatter::success(
+        $response['message'],
+        $response['code'],
+        $response['data'] ?? [],
+    );
+}
+
 
     public function create(UserRequest $request)
     {
@@ -124,10 +127,9 @@ class UserController extends Controller
 
     public function import(ImportApprenticeRequest $request)
     {
-        $data = $request->validated();
+        $file = $request->file('file');
 
-        // Llamamos al servicio de importación
-        $response = $this->importService->importApprentices($data);
+        $response = $this->importService->importFile($file);
 
         if ($response['error']) {
             return ResponseFormatter::error(

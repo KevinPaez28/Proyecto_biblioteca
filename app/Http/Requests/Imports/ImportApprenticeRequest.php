@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\ImportApprentice;
+namespace App\Http\Requests\Imports;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -14,7 +14,11 @@ class ImportApprenticeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:xlsx,xls', 'max:5120']
+            'file' => [
+                'required',
+                'file',
+                'max:5120'
+            ]
         ];
     }
 
