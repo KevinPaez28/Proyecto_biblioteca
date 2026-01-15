@@ -15,7 +15,7 @@ class updateFicha extends FormRequest
         $fichaId = $this->route('id');
 
         return [
-            'ficha' => "required|string|max:20|unique:ficha,ficha,{$fichaId}",
+            'ficha' => "required|max:20|unique:ficha,ficha,{$fichaId}",
             'programa' => 'required|exists:programs,id',
         ];
     }

@@ -10,22 +10,22 @@ class FichaServices
 {
     public function getfichas()
     {
-        $ficha = Ficha::all();
+        $fichas = Ficha::with('programa')->get();
 
-        if (count($ficha) == 0)
+        if ($fichas->isEmpty()) {
             return [
                 "error" => false,
                 "code" => 200,
-                "message" => "No hay fichas registrados",
-                "data" => $ficha
+                "message" => "No hay fichas registradas",
+                "data" => []
             ];
-
+        }
 
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Fichas obtenidos con éxito",
-            "data" => $ficha
+            "message" => "Fichas con programa obtenidas con éxito",
+            "data" => $fichas
         ];
     }
     public function Createfichas(array $data)
@@ -86,21 +86,31 @@ class FichaServices
     public function deleteficha($id)
     {
         $ficha = Ficha::find($id);
-    
 
-        if (!$ficha)
+        if (!$ficha) {
             return [
                 "error" => true,
                 "code" => 404,
                 "message" => "La ficha no existe",
             ];
+        }
 
+        // ===== Validar que no haya usuarios asociados =====
+        if ($ficha->usuarios()->count() > 0) {
+            return [
+                "error" => true,
+                "code" => 400,
+                "message" => "No se puede eliminar la ficha porque tiene usuarios asociados",
+            ];
+        }
+
+        // ===== Eliminar ficha =====
         $ficha->delete();
 
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Ficha eliminado con éxito",
+            "message" => "Ficha eliminada con éxito",
         ];
     }
 }

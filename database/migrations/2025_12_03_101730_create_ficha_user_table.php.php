@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('ficha_user', function (Blueprint $table) {
             $table->id();
-          
-            $table->foreignId('ficha_id')->constrained('ficha');;
-            $table->foreignId(column: 'usuario_id')->constrained('users');
+
+            $table->foreignId('ficha_id')->constrained('ficha');
+            $table->foreignId('usuario_id')->unique()->constrained('users');
+
             $table->timestamps();
         });
     }

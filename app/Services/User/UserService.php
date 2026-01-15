@@ -132,24 +132,26 @@ class UserService
             "message" => $users->isEmpty()
                 ? "No hay usuarios registrados"
                 : "Usuarios obtenidos con éxito",
-            "data" => $users->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'document' => $user->document,
-                    'first_name' => $user->perfil->name ?? '',
-                    'last_name' => $user->perfil->last_name ?? '',
-                    'email' => $user->email,
-                    'phone_number' => $user->perfil->phone ?? '',
-                    'rol' => $user->roles->pluck('name')->implode(', '),
-                    'estado' => $user->status->status ?? '',
-                ];
-            }),
-            "meta" => [
-                "current_page" => $users->currentPage(),
-                "last_page" => $users->lastPage(),
-                "per_page" => $users->perPage(),
-                "total" => $users->total(),
-            ],
+            "data" => [
+                "records" => $users->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'document' => $user->document,
+                        'first_name' => $user->perfil->name ?? '',
+                        'last_name' => $user->perfil->last_name ?? '',
+                        'email' => $user->email,
+                        'phone_number' => $user->perfil->phone ?? '',
+                        'rol' => $user->roles->pluck('name')->implode(', '),
+                        'estado' => $user->status->status ?? '',
+                    ];
+                }),
+                "meta" => [
+                    "current_page" => $users->currentPage(),
+                    "last_page" => $users->lastPage(),
+                    "per_page" => $users->perPage(),
+                    "total" => $users->total(),
+                ]
+            ]
         ];
     }
 
@@ -237,9 +239,9 @@ class UserService
     {
         try {
             DB::beginTransaction();
-
-            $user = User::with(['perfil', 'roles'])->find($id);
-
+    
+            $user = User::with(['perfil', 'roles', 'fichas'])->find($id);
+    
             if (!$user) {
                 return [
                     "error" => true,
@@ -247,13 +249,15 @@ class UserService
                     "message" => "El usuario no existe",
                 ];
             }
-
+    
+            // ================= USUARIO =================
             $user->update([
                 'document'  => $data['documento'],
                 'email'     => $data['correo'],
                 'status_id' => $data['status_id'],
             ]);
-
+    
+            // ================= PERFIL =================
             if ($user->perfil) {
                 $user->perfil->update([
                     'name'      => $data['nombres'],
@@ -261,32 +265,50 @@ class UserService
                     'phone'     => $data['telefono'],
                 ]);
             }
-
+    
+            // ================= ROL =================
             if (!empty($data['rol_id'])) {
                 $rol = Role::find($data['rol_id']);
                 if ($rol) {
                     $user->syncRoles([$rol->name]);
                 }
             }
-
+    
+            // ================= FICHA (SOLO ASOCIAR) =================
+            if (!empty($data['ficha_id'])) {
+    
+                $existe = ficha_user::where('usuario_id', $user->id)
+                    ->where('ficha_id', $data['ficha_id'])
+                    ->exists();
+    
+                if (!$existe) {
+                    ficha_user::create([
+                        'usuario_id' => $user->id,
+                        'ficha_id'   => $data['ficha_id'],
+                    ]);
+                }
+            }
+    
             DB::commit();
-
+    
             return [
                 "error" => false,
                 "code" => 200,
-                "message" => "Usuario actualizado con éxito",
-                "data" => $user
+                "message" => "Usuario actualizado correctamente",
+                "data" => $user->load(['perfil', 'roles', 'fichas.programa'])
             ];
-        } catch (Exception $e) {
+    
+        } catch (\Exception $e) {
             DB::rollBack();
-
+    
             return [
                 "error" => true,
                 "code" => 500,
-                "message" => "Ocurrió un error al actualizar el usuario",
+                "message" => "Error al actualizar el usuario",
             ];
         }
     }
+    
 
     public function deleteUser($id)
     {

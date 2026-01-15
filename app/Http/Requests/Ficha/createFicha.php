@@ -22,20 +22,19 @@ class createFicha extends FormRequest
     public function rules(): array
     {
         return [
-            'ficha' => 'required|string|unique:ficha,ficha',
-            'programa' =>'required|numeric|exists:programs,id'
+            'ficha' => 'required|unique:ficha,ficha', // ID de la ficha como texto
+            'programa' => 'required|numeric|exists:programs,id' // ID del programa como número
         ];
     }
 
-    public function messages(): array{
+    public function messages(): array
+    {
         return [
             'ficha.required' => 'El ID de la ficha es obligatorio.',
-            'ficha.string' => 'El ID de la ficha debe ser una cadena de texto.',
             'ficha.unique' => 'El ID de la ficha ya existe.',
-            'programa.required' => 'El id del programa es obligatorio.',
-            'programa.string' => 'El id del programa debe ser una cadena de texto.',
-            'programa.exists' => 'El id del programa no existe en la tabla de programas.',
+            'programa.required' => 'El ID del programa es obligatorio.',
+            'programa.numeric' => 'El ID del programa debe ser un número válido.',
+            'programa.exists' => 'El ID del programa no existe en la tabla de programas.',
         ];
     }
-
 }
