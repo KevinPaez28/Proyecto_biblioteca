@@ -29,8 +29,8 @@ class updateRequest extends FormRequest
             'correo'    => 'required|email|max:255',
             'status_id' => 'required|integer|exists:user_statuses,id',
             'rol_id'    => 'required|integer|exists:roles,id',
-            'ficha_id'     => 'required|integer|exists:ficha,id',
-            'programa_id'  => 'required|integer|exists:programs,id',
+            'ficha_id'     => 'integer|exists:ficha,id',
+            'programa_id'  => 'integer|exists:programs,id',
             'nombres'   => 'required|string|max:50',
             'apellidos' => 'required|string|max:50',
             'telefono'  => 'required|string|min:10|max:10',
@@ -56,10 +56,8 @@ class updateRequest extends FormRequest
             'rol_id.required'    => 'El rol es obligatorio.',
             'rol_id.exists'      => 'El rol seleccionado no es válido.',
 
-            'ficha_id.required'    => 'La ficha es obligatoria.',
             'ficha_id.exists'      => 'El ficha seleccionada no es válido.',
 
-            'programa_id.required'    => 'El programa es obligatorio.',
             'programa_id.exists'      => 'El programa seleccionada no es válido.',
 
             'nombres.required'   => 'El nombre es obligatorio.',

@@ -53,15 +53,15 @@ Route::prefix('EstadoUsuarios')->group(function () {
     Route::patch('/{id}', [UserStatusController::class, 'update']);
     Route::delete('/delete/{id}', [UserStatusController::class, 'delete']);
 });
-    Route::prefix('user')->group(function () {
-        Route::get('/', [UserController::class, 'getAll']);
-        Route::get('/aprendices', [UserController::class, 'apprentice']);
-        Route::get('/search', [UserController::class, 'getByinformation']);
-        Route::post('/create', [UserController::class, 'create']);
-        Route::post('/import', [UserController::class, 'import']);
-        Route::patch('/{id}', [UserController::class, 'update']);
-        Route::delete('/delete/{id}', [UserController::class, 'delete']);
-    });
+Route::prefix('user')->group(function () {
+    Route::get('/', [UserController::class, 'getAll']);
+    Route::get('/aprendices', [UserController::class, 'apprentice']);
+    Route::get('/search', [UserController::class, 'getByinformation']);
+    Route::post('/create', [UserController::class, 'create']);
+    Route::post('/import', [UserController::class, 'import']);
+    Route::patch('/{id}', [UserController::class, 'update']);
+    Route::delete('/delete/{id}', [UserController::class, 'delete']);
+});
 // CRUD roles
 Route::prefix('roles')->group(function () {
     Route::get('/', [rolesController::class, 'getAll']);
@@ -186,7 +186,9 @@ Route::prefix('eventos')->group(function () {
 
 Route::prefix('asistencia')->group(function () {
     Route::get('/', [assitancesController::class, 'getAll']);
+    Route::get('/events', [assitancesController::class, 'getEvents']);
     Route::post('/create', [assitancesController::class, 'create']);
+    Route::post('/events/create', [assitancesController::class, 'createEventAssistance']);
     Route::patch('/{id}', [assitancesController::class, 'update']);
     Route::delete('/delete/{id}', [assitancesController::class, 'delete']);
     Route::get('/total-dia', [assitancesController::class, 'getTotalByDay']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\assistances;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\assistances\createAssistances;
+use App\Http\Requests\assistances\createEventAssistance;
 use App\Http\Requests\assistances\updateAssistances;
 use App\Services\assitances\assitanceServices;
 use Illuminate\Http\Request;
@@ -32,6 +33,33 @@ class assitancesController extends Controller
         ]);
 
         $response = $this->assitancesServices->getAssistances($filters);
+
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
+    }
+    public function getEvents(Request $request)
+    {
+        $filters = $request->only([
+            'nombre',
+            'apellido',
+            'documento',
+            'ficha',
+            'fecha',
+            'motivo',
+            'rol'
+        ]);
+
+        $response = $this->assitancesServices->getEventAttendances($filters);
 
         if ($response['error']) {
             return ResponseFormatter::error(
@@ -74,6 +102,18 @@ class assitancesController extends Controller
         $data = $request->validated();
 
         $response = $this->assitancesServices->CreateAssistances($data);
+
+
+        if ($response['error'])
+            return ResponseFormatter::error($response['message'], $response['code']);
+
+        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+    }
+    public function createEventAssistance(createEventAssistance $request)
+    {
+        $data = $request->validated();
+
+        $response = $this->assitancesServices->createByEventAndFicha($data);
 
 
         if ($response['error'])

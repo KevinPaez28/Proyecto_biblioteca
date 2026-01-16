@@ -75,6 +75,83 @@ class assitanceServices
             "data" => $data
         ];
     }
+    public function getEventAttendances(array $filters = [])
+    {
+        $query = assitances::with([
+            'user.perfil',
+            'user.fichas',
+            'user.roles',
+            'event'
+        ])
+            ->whereNotNull('event_id');
+
+        if (!empty($filters['nombre'])) {
+            $query->whereHas('user.perfil', function ($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['nombre'] . '%');
+            });
+        }
+
+        if (!empty($filters['apellido'])) {
+            $query->whereHas('user.perfil', function ($q) use ($filters) {
+                $q->where('last_name', 'like', '%' . $filters['apellido'] . '%');
+            });
+        }
+
+        if (!empty($filters['documento'])) {
+            $query->whereHas('user', function ($q) use ($filters) {
+                $q->where('document', 'like', '%' . $filters['documento'] . '%');
+            });
+        }
+
+        if (!empty($filters['ficha'])) {
+            $query->whereHas('user.fichas', function ($q) use ($filters) {
+                $q->where('ficha', 'like', '%' . $filters['ficha'] . '%');
+            });
+        }
+
+        if (!empty($filters['fecha'])) {
+            $query->whereDate('created_at', $filters['fecha']);
+        }
+
+        if (!empty($filters['evento'])) {
+            $query->whereHas('event', function ($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['evento'] . '%');
+            });
+        }
+
+        if (!empty($filters['rol'])) {
+            $query->whereHas('user.roles', function ($q) use ($filters) {
+                $q->where('name', $filters['rol']);
+            });
+        }
+
+        $data = $query->get();
+
+        $result = $data->map(function ($a) {
+            return [
+                'Ficha'     => optional($a->user->fichas->first())->ficha ?? '',
+                'Documento' => $a->user->document ?? '',
+                'FirstName' => $a->user->perfil->name ?? '',
+                'LastName'  => $a->user->perfil->last_name ?? '',
+                'DateTime'  => $a->created_at,
+                'Event'     => $a->event->name ?? '',
+                'Role'      => optional($a->user->roles->first())->name ?? ''
+            ];
+        });
+
+        return [
+            "error" => false,
+            "success" => true,
+            "code" => 200,
+            "message" => $result->isEmpty()
+                ? "No hay asistencias a eventos registradas"
+                : "Asistencias a eventos obtenidas con éxito",
+            "data" => $result
+        ];
+    }
+
+
+
 
 
     public function getTotalByDay()
@@ -191,6 +268,26 @@ class assitanceServices
             "data" => $data
         ];
     }
+    public function createByEventAndFicha(array $data): array
+    {
+        try {
+            // Por ahora SOLO devolvemos OK
+            // Luego aquí disparamos el Event
+
+            return [
+                'error'   => false,
+                'code'    => 201,
+                'message' => 'Solicitud de asistencia creada correctamente'
+            ];
+        } catch (Exception $e) {
+            return [
+                'error'   => true,
+                'code'    => 500,
+                'message' => 'Error al crear la asistencia'
+            ];
+        }
+    }
+
     public function CreateAssistances(array $data)
     {
         // 1. Validar usuario
