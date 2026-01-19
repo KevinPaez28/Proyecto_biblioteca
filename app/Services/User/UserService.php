@@ -71,7 +71,7 @@ class UserService
             ]);
         }
 
-        if ($rolModel->name === 'Administrador') {
+        if ($rolModel->name === 'Administrador' || $rolModel->name === 'Ayudante') {
             $user->sendEmailVerificationNotification();
 
             return [

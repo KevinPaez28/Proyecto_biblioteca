@@ -4,6 +4,8 @@ namespace App\Services\assitances;
 
 use App\Events\EventAssistanceCreated;
 use App\Models\assitances\assitances;
+use App\Models\Ficha\Ficha;
+use App\Models\Ficha_users\ficha_user;
 use App\Models\Schedules\Schedules;
 use App\Models\Shifts\Shifts;
 use App\Models\User\User;
@@ -83,9 +85,9 @@ class assitanceServices
             'user.fichas',
             'user.roles',
             'event'
-        ])
-            ->whereNotNull('event_id');
+        ])->whereNotNull('event_id');
 
+        // ================= FILTROS =================
         if (!empty($filters['nombre'])) {
             $query->whereHas('user.perfil', function ($q) use ($filters) {
                 $q->where('name', 'like', '%' . $filters['nombre'] . '%');
@@ -126,30 +128,34 @@ class assitanceServices
             });
         }
 
-        $data = $query->get();
-
-        $result = $data->map(function ($a) {
-            return [
-                'Ficha'     => optional($a->user->fichas->first())->ficha ?? '',
-                'Documento' => $a->user->document ?? '',
-                'FirstName' => $a->user->perfil->name ?? '',
-                'LastName'  => $a->user->perfil->last_name ?? '',
-                'DateTime'  => $a->created_at,
-                'Event'     => $a->event->name ?? '',
-                'Role'      => optional($a->user->roles->first())->name ?? ''
-            ];
-        });
+        // ================= OBTENER DATOS =================
+        $data = $query->get()
+            ->groupBy(fn($a) => optional($a->user->fichas->first())->id) // Agrupa por ficha
+            ->map(function ($group) {
+                $a = $group->first(); // Tomamos solo la primera asistencia de cada ficha
+                return [
+                    'Ficha'     => optional($a->user->fichas->first())->ficha ?? '',
+                    'Documento' => $a->user->document ?? '',
+                    'FirstName' => $a->user->perfil->name ?? '',
+                    'LastName'  => $a->user->perfil->last_name ?? '',
+                    'DateTime'  => $a->created_at,
+                    'Event'     => $a->event->name ?? '',
+                    'Role'      => optional($a->user->roles->first())->name ?? ''
+                ];
+            })
+            ->values(); // Reindexa la colección
 
         return [
-            "error" => false,
+            "error"   => false,
             "success" => true,
-            "code" => 200,
-            "message" => $result->isEmpty()
+            "code"    => 200,
+            "message" => $data->isEmpty()
                 ? "No hay asistencias a eventos registradas"
                 : "Asistencias a eventos obtenidas con éxito",
-            "data" => $result
+            "data" => $data
         ];
     }
+
 
 
 
@@ -272,33 +278,85 @@ class assitanceServices
 
     public function createByEventAndFicha(array $data): array
     {
-        try {
-            if (empty($data['event_id']) || empty($data['ficha_id'])) {
-                return [
-                    'error'   => true,
-                    'code'    => 422,
-                    'message' => 'Debe enviar event_id y ficha_id'
-                ];
-            }
-
-            event(new EventAssistanceCreated([
-                'event_id' => $data['event_id'],
-                'ficha_id' => $data['ficha_id'],
-            ]));
-
-            return [
-                'error'   => false,
-                'code'    => 201,
-                'message' => 'Asistencias solicitadas correctamente para los aprendices de la ficha'
-            ];
-        } catch (Exception $e) {
+        if (empty($data['event_id']) || empty($data['ficha_id'])) {
             return [
                 'error'   => true,
-                'code'    => 500,
-                'message' => 'Error al crear la asistencia: ' . $e->getMessage()
+                'code'    => 422,
+                'message' => 'Debe enviar event_id y ficha_id'
             ];
         }
+
+        $eventId = $data['event_id'];
+        $fichaId = $data['ficha_id'];
+        $created = [];
+        $skipped = [];
+
+        $horaActual = now()->format('H:i');
+
+        $horario = Schedules::where('start_time', '<=', $horaActual)
+            ->where('end_time', '>=', $horaActual)
+            ->first();
+
+        if (!$horario) {
+            return [
+                'error'   => true,
+                'code'    => 400,
+                'message' => 'No hay horario activo en este momento'
+            ];
+        }
+
+        $jornada = $horario->shifts()->first();
+        if (!$jornada) {
+            return [
+                'error'   => true,
+                'code'    => 400,
+                'message' => 'No se encontró jornada asociada al horario'
+            ];
+        }
+
+        $usuariosIds = ficha_user::where('ficha_id', $fichaId)->pluck('usuario_id');
+
+        if ($usuariosIds->isEmpty()) {
+            return [
+                'error'   => true,
+                'code'    => 400,
+                'message' => 'La ficha no tiene usuarios asignados'
+            ];
+        }
+
+        $usuarios = User::whereIn('id', $usuariosIds)->get();
+
+        foreach ($usuarios as $usuario) {
+            $existe = assitances::where('user_id', $usuario->id)
+                ->where('working_day_id', $jornada->id)
+                ->whereDate('created_at', today())
+                ->exists();
+
+            if ($existe) {
+                $skipped[] = $usuario->perfil->name;
+                continue;
+            }
+
+            assitances::create([
+                'user_id'        => $usuario->id,
+                'working_day_id' => $jornada->id,
+                'event_id'       => $eventId,
+                'reason_id'      => 1,
+            ]);
+
+            $created[] = $usuario->perfil->name;
+        }
+
+        return [
+            'error'   => false,
+            'code'    => 201,
+            'message' => [
+                'created' => $created,
+                'skipped' => $skipped
+            ]
+        ];
     }
+
 
 
     public function CreateAssistances(array $data)
@@ -411,7 +469,7 @@ class assitanceServices
         }
     }
 
-    public function deleteAssistances($id)
+    public function deleteAprendices($id)
     {
         $rooms = assitances::find($id);
 
@@ -429,6 +487,70 @@ class assitanceServices
             "error" => false,
             "code" => 200,
             "message" => "Asistencia eliminada con éxito",
+        ];
+    }
+    public function deleteAllByFicha($data)
+    {
+        // 1. Buscamos la ficha por su número
+        $ficha = Ficha::where('ficha', $data['ficha'])->first();
+
+        if (!$ficha) {
+            return [
+                "error" => true,
+                "code" => 404,
+                "message" => "No se encontró la ficha con ese número",
+            ];
+        }
+
+        // 2. Obtenemos los usuarios de la ficha (muchos a muchos)
+        $usuarios = ficha_user::where('ficha_id', $ficha->id)->get();
+
+        if ($usuarios->isEmpty()) {
+            return [
+                "error" => true,
+                "code" => 404,
+                "message" => "No se encontraron usuarios en esta ficha",
+            ];
+        }
+
+        // ⚡ Usar la columna correcta: 'usuario_id'
+        $userIds = $usuarios->pluck('usuario_id')->toArray();
+
+        // 3. Buscamos las asistencias de esos usuarios
+        $query = assitances::whereIn('user_id', $userIds);
+
+        if (!empty($data['event_id'])) {
+            $query->where('event_id', (int) $data['event_id']);
+        }
+
+        $asistencias = $query->get();
+
+        if ($asistencias->isEmpty()) {
+            return [
+                "error" => true,
+                "code" => 404,
+                "message" => "No se encontraron asistencias de estos usuarios en el evento",
+            ];
+        }
+
+        // 4. Guardamos los datos eliminados en un objeto
+        $asistenciasObj = [];
+        foreach ($asistencias as $asistencia) {
+            $asistenciasObj[] = (object)[
+                'id' => $asistencia->id,
+                'user_id' => $asistencia->user_id,
+                'event_id' => $asistencia->event_id,
+            ];
+        }
+
+        // 5. Eliminamos las asistencias
+        $query->delete();
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Asistencias eliminadas correctamente",
+            "data" => $asistenciasObj,
         ];
     }
 }

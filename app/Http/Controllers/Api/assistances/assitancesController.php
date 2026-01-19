@@ -132,15 +132,33 @@ class assitancesController extends Controller
             'data'    => $data
         ]);
     }
-    public function delete(string $id)
+    public function deleteAprendices(Request $request)
     {
-        $response = $this->assitancesServices->deleteAssistances($id);
+        // Tomamos ficha y event_id desde query params
+        $data = [
+            'ficha' => $request->query('ficha'),
+            'event_id' => $request->query('event_id'), // opcional
+        ];
 
-        if ($response['error'])
+        if (empty($data['ficha'])) {
+            return ResponseFormatter::error('La ficha es obligatoria', 422);
+        }
+
+        $response = $this->assitancesServices->deleteAllByFicha($data);
+
+        if ($response['error']) {
             return ResponseFormatter::error($response['message'], $response['code']);
+        }
 
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
     }
+
+
+
     public function getTotalByDay()
     {
         $response = $this->assitancesServices->getTotalByDay();

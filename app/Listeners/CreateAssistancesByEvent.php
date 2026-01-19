@@ -9,6 +9,7 @@ use App\Models\User\User;
 use App\Models\Ficha_users\ficha_user;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 
 class CreateAssistancesByEvent
 {
@@ -19,8 +20,20 @@ class CreateAssistancesByEvent
         $eventId = $event->data['event_id'] ?? null;
         $fichaId = $event->data['ficha_id'] ?? null;
 
+        // Validar datos básicos
         if (!$eventId || !$fichaId) {
-            return; // Datos insuficientes
+            Log::warning("No se pudo crear asistencia: datos insuficientes.", [
+                'event_id' => $eventId,
+                'ficha_id' => $fichaId
+            ]);
+            return;
+        }
+
+        // Validar que el evento exista
+        $evento = $event->data['event'] ?? null; // Si quieres puedes buscarlo en DB
+        if (!$evento) {
+            Log::warning("No se encontró el evento con ID: {$eventId}");
+            return;
         }
 
         // Hora actual
@@ -31,19 +44,33 @@ class CreateAssistancesByEvent
             ->where('end_time', '>=', $horaActual)
             ->first();
 
-        if (!$horario) return;
+        if (!$horario) {
+            Log::warning("No hay horario activo a la hora {$horaActual} para la ficha {$fichaId}");
+            return;
+        }
 
         // Obtener jornada (shift)
         $jornada = $horario->shifts()->first();
-        if (!$jornada) return;
+        if (!$jornada) {
+            Log::warning("No se encontró jornada asociada al horario ID: {$horario->id}");
+            return;
+        }
 
-        // 🔹 Obtener IDs de usuarios de la ficha desde la tabla pivote directamente
+        // Obtener IDs de usuarios de la ficha
         $usuariosIds = ficha_user::where('ficha_id', $fichaId)->pluck('usuario_id');
 
-        if ($usuariosIds->isEmpty()) return;
+        if ($usuariosIds->isEmpty()) {
+            Log::warning("La ficha {$fichaId} no tiene usuarios asignados. No se generará asistencia.");
+            return;
+        }
 
-        // Traer los usuarios activos (sin tocar relación fichas)
+        // Traer los usuarios activos
         $usuarios = User::whereIn('id', $usuariosIds)->get();
+
+        if ($usuarios->isEmpty()) {
+            Log::warning("No se encontraron usuarios activos para la ficha {$fichaId}");
+            return;
+        }
 
         foreach ($usuarios as $usuario) {
             // Evitar duplicados el mismo día y misma jornada
@@ -59,7 +86,10 @@ class CreateAssistancesByEvent
                 'user_id'        => $usuario->id,
                 'working_day_id' => $jornada->id,
                 'event_id'       => $eventId,
+                'reason_id'      => 1, // Por defecto
             ]);
         }
+
+        Log::info("Asistencias creadas correctamente para la ficha {$fichaId} y evento {$eventId}");
     }
 }

@@ -65,9 +65,12 @@ Route::prefix('user')->group(function () {
 // CRUD roles
 Route::prefix('roles')->group(function () {
     Route::get('/', [rolesController::class, 'getAll']);
+    Route::get('/permisos', [rolesController::class, 'permissions']);
     Route::post('/create', [rolesController::class, 'create']);
     Route::patch('/{id}', [rolesController::class, 'update']);
+    Route::patch('/edit/{id}', [rolesController::class, 'editRoles']);
     Route::delete('/delete/{id}', [rolesController::class, 'delete']);
+    
 });
 
 // CRUD Programas
@@ -190,7 +193,7 @@ Route::prefix('asistencia')->group(function () {
     Route::post('/create', [assitancesController::class, 'create']);
     Route::post('/events/create', [assitancesController::class, 'createEventAssistance']);
     Route::patch('/{id}', [assitancesController::class, 'update']);
-    Route::delete('/delete/{id}', [assitancesController::class, 'delete']);
+    Route::delete('/delete/ficha', [assitancesController::class, 'deleteAprendices']);
     Route::get('/total-dia', [assitancesController::class, 'getTotalByDay']);
     Route::get('/total-semana', [assitancesController::class, 'getTotalByWeek']);
     Route::get('/total-mes', [assitancesController::class, 'getTotalByMonth']);
