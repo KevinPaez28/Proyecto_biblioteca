@@ -2,11 +2,10 @@
 
 namespace App\Services\ImportExcel;
 
-use App\Imports\ApprenticesImport;
+use App\Models\Ficha\Ficha;
 use App\Models\Ficha_users\ficha_user;
 use App\Models\Profiles\Profiles;
 use App\Models\User\User;
-use GuzzleHttp\Psr7\UploadedFile;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Spatie\Permission\Models\Role;
 
@@ -27,6 +26,24 @@ class ImportExcelService
                 $row = array_combine($headers, $rows[$i]);
 
                 try {
+                    // ================= VALIDAR FICHA =================
+                    if (empty($row['ficha'])) {
+                        $errors[] = [
+                            'documento' => $row['numero_documento'] ?? null,
+                            'error'     => 'No se proporcionó ficha',
+                        ];
+                        continue; // Saltar fila si no hay ficha
+                    }
+
+                    $ficha = Ficha::where('ficha', trim($row['ficha']))->first();
+                    if (!$ficha) {
+                        $errors[] = [
+                            'documento' => $row['numero_documento'] ?? null,
+                            'error'     => "La ficha {$row['ficha']} no existe",
+                        ];
+                        continue; // Saltar fila si ficha no existe
+                    }
+
                     // ================= USUARIO =================
                     $user = User::create([
                         'document'  => $row['numero_documento'],
@@ -44,24 +61,20 @@ class ImportExcelService
                     ]);
 
                     // ================= ROL =================
-                    // ================= ROL (SIEMPRE APRENDIZ) =================
                     $rol = Role::where('name', 'Aprendiz')->first();
-
                     if ($rol) {
                         $user->assignRole($rol->name);
                     }
 
-
                     // ================= FICHA =================
-                    if (!empty($row['ficha_id'])) {
-                        ficha_user::create([
-                            'usuario_id' => $user->id,
-                            'ficha_id'   => $row['ficha_id'],
-                        ]);
-                    }
+                    ficha_user::create([
+                        'usuario_id' => $user->id,
+                        'ficha_id'   => $ficha->id,
+                    ]);
+
                 } catch (\Throwable $e) {
                     $errors[] = [
-                        'documento' => $row['documento'] ?? null,
+                        'documento' => $row['numero_documento'] ?? null,
                         'error'     => $e->getMessage(),
                     ];
                 }
@@ -82,6 +95,7 @@ class ImportExcelService
                 'message' => 'Aprendices importados correctamente',
                 'data'    => [],
             ];
+
         } catch (\Throwable $e) {
             return [
                 'error'   => true,

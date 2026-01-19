@@ -81,7 +81,6 @@ class UserController extends Controller
         );
     }
 
-    // ✅ Enviar data y meta juntos
     return ResponseFormatter::success(
         $response['message'],
         $response['code'],

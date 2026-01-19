@@ -2,6 +2,7 @@
 
 namespace App\Services\assitances;
 
+use App\Events\EventAssistanceCreated;
 use App\Models\assitances\assitances;
 use App\Models\Schedules\Schedules;
 use App\Models\Shifts\Shifts;
@@ -268,25 +269,37 @@ class assitanceServices
             "data" => $data
         ];
     }
+
     public function createByEventAndFicha(array $data): array
     {
         try {
-            // Por ahora SOLO devolvemos OK
-            // Luego aquí disparamos el Event
+            if (empty($data['event_id']) || empty($data['ficha_id'])) {
+                return [
+                    'error'   => true,
+                    'code'    => 422,
+                    'message' => 'Debe enviar event_id y ficha_id'
+                ];
+            }
+
+            event(new EventAssistanceCreated([
+                'event_id' => $data['event_id'],
+                'ficha_id' => $data['ficha_id'],
+            ]));
 
             return [
                 'error'   => false,
                 'code'    => 201,
-                'message' => 'Solicitud de asistencia creada correctamente'
+                'message' => 'Asistencias solicitadas correctamente para los aprendices de la ficha'
             ];
         } catch (Exception $e) {
             return [
                 'error'   => true,
                 'code'    => 500,
-                'message' => 'Error al crear la asistencia'
+                'message' => 'Error al crear la asistencia: ' . $e->getMessage()
             ];
         }
     }
+
 
     public function CreateAssistances(array $data)
     {

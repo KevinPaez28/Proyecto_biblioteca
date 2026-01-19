@@ -186,7 +186,7 @@ class UserService
         }
 
         if (!empty($filters['ficha'])) {
-            $query->whereHas('fichas', function ($q) use ($filters) {
+            $query->whereHas('ficha', function ($q) use ($filters) {
                 $q->where('ficha', 'like', '%' . $filters['ficha'] . '%');
             });
         }

@@ -11,7 +11,7 @@ class createEventAssistance extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,7 @@ class createEventAssistance extends FormRequest
     {
         return [
             'event_id' => 'required|exists:events,id',
-            'ficha_id' => 'required|exists:fichas,id',
+            'ficha_id' => 'required|exists:ficha,id',
         ];
     }
 

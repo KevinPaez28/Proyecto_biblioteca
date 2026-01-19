@@ -8,7 +8,7 @@ class ImportApprenticeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Permite que cualquier usuario autorizado haga la solicitud
+        return true; 
     }
 
     public function rules(): array
