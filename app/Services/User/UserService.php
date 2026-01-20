@@ -239,9 +239,9 @@ class UserService
     {
         try {
             DB::beginTransaction();
-    
+
             $user = User::with(['perfil', 'roles', 'fichas'])->find($id);
-    
+
             if (!$user) {
                 return [
                     "error" => true,
@@ -249,14 +249,14 @@ class UserService
                     "message" => "El usuario no existe",
                 ];
             }
-    
+
             // ================= USUARIO =================
             $user->update([
                 'document'  => $data['documento'],
                 'email'     => $data['correo'],
                 'status_id' => $data['status_id'],
             ]);
-    
+
             // ================= PERFIL =================
             if ($user->perfil) {
                 $user->perfil->update([
@@ -265,7 +265,7 @@ class UserService
                     'phone'     => $data['telefono'],
                 ]);
             }
-    
+
             // ================= ROL =================
             if (!empty($data['rol_id'])) {
                 $rol = Role::find($data['rol_id']);
@@ -273,14 +273,14 @@ class UserService
                     $user->syncRoles([$rol->name]);
                 }
             }
-    
+
             // ================= FICHA (SOLO ASOCIAR) =================
             if (!empty($data['ficha_id'])) {
-    
+
                 $existe = ficha_user::where('usuario_id', $user->id)
                     ->where('ficha_id', $data['ficha_id'])
                     ->exists();
-    
+
                 if (!$existe) {
                     ficha_user::create([
                         'usuario_id' => $user->id,
@@ -288,19 +288,18 @@ class UserService
                     ]);
                 }
             }
-    
+
             DB::commit();
-    
+
             return [
                 "error" => false,
                 "code" => 200,
                 "message" => "Usuario actualizado correctamente",
                 "data" => $user->load(['perfil', 'roles', 'fichas.programa'])
             ];
-    
         } catch (\Exception $e) {
             DB::rollBack();
-    
+
             return [
                 "error" => true,
                 "code" => 500,
@@ -308,7 +307,7 @@ class UserService
             ];
         }
     }
-    
+
 
     public function deleteUser($id)
     {
@@ -330,12 +329,32 @@ class UserService
             ];
         }
 
-        $user->delete();
+        try {
+            DB::beginTransaction();
 
-        return [
-            "error" => false,
-            "code" => 200,
-            "message" => "Usuario eliminado con éxito",
-        ];
+            // Eliminar profile asociado
+            $profile = $user->perfil; // si tienes relación definida en User -> profile()
+            if ($profile) {
+                $profile->delete();
+            }
+
+            // Eliminar el usuario
+            $user->delete();
+
+            DB::commit();
+
+            return [
+                "error" => false,
+                "code" => 200,
+                "message" => "Usuario y profile eliminados con éxito",
+            ];
+        } catch (Exception $e) {
+            DB::rollback();
+            return [
+                "error" => true,
+                "code" => 500,
+                "message" => "Ocurrió un error al eliminar el usuario",
+            ];
+        }
     }
 }

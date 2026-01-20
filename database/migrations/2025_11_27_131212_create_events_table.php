@@ -17,9 +17,11 @@ return new class extends Migration
             $table->string('mandated');
             $table->foreignId('room_id')->constrained('rooms');
             $table->date('date');
+            $table->time('time'); 
             $table->foreignId('state_event_id')->constrained('state_events');
             $table->timestamps();
         });
+        
     }
 
     /**

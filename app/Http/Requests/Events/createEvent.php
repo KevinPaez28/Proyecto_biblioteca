@@ -22,25 +22,28 @@ class createEvent extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => 'required|string|max:255',
-            'encargado' => 'required|string|max:255',
-            'sala_id' => 'required|exists:rooms,id',
-            'fecha' => 'required|date',
-            'estado_id' => 'required|exists:state_events,id',
+            'nombre'     => 'required|string|max:255',
+            'encargado'  => 'required|string|max:255',
+            'sala_id'    => 'required|exists:rooms,id',
+            'fecha'      => 'required|date',
+            'hora'       => 'required|date_format:H:i',
+            'estado_id'  => 'required|exists:state_events,id',
         ];
     }
-
+    
     public function messages(): array
     {
         return [
-            'nombre.required' => 'El nombre del evento es obligatorio.',
+            'nombre.required'    => 'El nombre del evento es obligatorio.',
             'encargado.required' => 'El encargado del evento es obligatorio.',
-            'sala_id.required' => 'La sala es obligatoria.',
-            'sala_id.exists' => 'La sala seleccionada no existe.',
-            'fecha.required' => 'La fecha es obligatoria.',
-            'fecha.date' => 'La fecha debe ser válida.',
+            'sala_id.required'   => 'La sala es obligatoria.',
+            'sala_id.exists'     => 'La sala seleccionada no existe.',
+            'fecha.required'     => 'La fecha es obligatoria.',
+            'fecha.date'         => 'La fecha debe ser válida.',
+            'hora.required'      => 'La hora es obligatoria.',
+            'hora.date_format'   => 'La hora debe tener formato HH:MM.',
             'estado_id.required' => 'El estado del evento es obligatorio.',
-            'estado_id.exists' => 'El estado seleccionado no existe.',
+            'estado_id.exists'   => 'El estado seleccionado no existe.',
         ];
-    }
+    }    
 }

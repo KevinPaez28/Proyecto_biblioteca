@@ -54,20 +54,44 @@ class RoleServices
         ];
     }
 
-
-
-
+    
     public function CreateRoles(array $data)
     {
-        return [
-            'error' => false,
-            'code' => 201,
-            'message' => 'Rol creado con éxito',
-            'data' => Role::create([
+        DB::beginTransaction();
+    
+        try {
+            // Crear el rol
+            $role = Role::create([
                 'name' => $data['name'],
-            ]),
-        ];
+            ]);
+    
+            // Asignar permisos (si vienen)
+            if (!empty($data['permisos']) && is_array($data['permisos'])) {
+                $permisos = Permission::whereIn('id', $data['permisos'])->get();
+                $role->syncPermissions($permisos);
+            }
+    
+            DB::commit();
+    
+            return [
+                'error' => false,
+                'code' => 201,
+                'message' => 'Rol creado con éxito',
+                'data' => $role->load('permissions'),
+            ];
+    
+        } catch (\Throwable $e) {
+            DB::rollBack();
+    
+            return [
+                'error' => true,
+                'code' => 500,
+                'message' => 'Error al crear el rol',
+                'details' => $e->getMessage(),
+            ];
+        }
     }
+    
 
     public function updateRoles(array $data, $id)
     {

@@ -93,7 +93,6 @@ class ShiftServices
         try {
             DB::beginTransaction();
 
-            // Buscar el programa
             $Shifts = Shifts::find($id);
 
             if (!$Shifts) {

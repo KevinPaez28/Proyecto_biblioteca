@@ -19,13 +19,14 @@ class EventServices
                 'e.name',
                 'e.mandated',
                 'e.date',
+                'e.time',
                 'r.id as room_id',
                 'r.name as room_name',
                 'se.id as state_id',
                 'se.name as state_name'
             );
 
-        // 🔍 FILTROS
+        // ================= FILTROS =================
 
         if (!empty($filters['nombre'])) {
             $query->where('e.name', 'like', '%' . $filters['nombre'] . '%');
@@ -34,6 +35,7 @@ class EventServices
         if (!empty($filters['estado'])) {
             $query->where('se.id', $filters['estado']);
         }
+
         if (!empty($filters['encargado'])) {
             $query->where('e.mandated', 'like', '%' . $filters['encargado'] . '%');
         }
@@ -48,41 +50,53 @@ class EventServices
 
         $data = $query->get();
 
+        // ================= FORMATEO =================
         $data = $data->map(function ($item) {
             return [
-                'id' => $item->id,
-                'name' => $item->name,
+                'id'       => $item->id,
+                'name'     => $item->name,
                 'mandated' => $item->mandated,
-                'date' => $item->date,
-                'room' => [
-                    'id' => $item->room_id,
+                'date'     => $item->date,
+                'time'     => Carbon::parse($item->time)->format('g:i A'),
+                'room'     => [
+                    'id'   => $item->room_id,
                     'name' => $item->room_name,
                 ],
-                'state' => [
-                    'id' => $item->state_id,
+                'state'    => [
+                    'id'   => $item->state_id,
                     'name' => $item->state_name,
                 ]
             ];
         });
 
         return [
-            "error" => false,
-            "code" => 200,
+            "error"   => false,
+            "code"    => 200,
             "message" => $data->isEmpty()
                 ? "No hay eventos registrados"
                 : "Eventos obtenidos con éxito",
-            "data" => $data
+            "data"    => $data
         ];
     }
-
-
 
 
     public function gettoday()
     {
         $today = Carbon::today('America/Bogota');
 
-        $events = events::whereDate('date', $today)->get();
+        $events = events::whereDate('date', $today)
+            ->get()
+            ->map(function ($event) {
+                return [
+                    'id' => $event->id,
+                    'name' => $event->name,
+                    'mandated' => $event->mandated,
+                    'date' => $event->date,
+                    'time' => Carbon::parse($event->time)->format('g:i A'), // 👈 FORMATO 12 HORAS
+                    'room_id' => $event->room_id,
+                    'state_event_id' => $event->state_event_id,
+                ];
+            });
 
         if ($events->isEmpty()) {
             return [
@@ -102,22 +116,37 @@ class EventServices
     }
 
 
-
     public function CreateEvents(array $data)
     {
-        $rooms = events::Create([
+        // Revisar si ya hay un evento en la misma sala y hora
+        $existe = events::where('room_id', $data['sala_id'])
+            ->where('date', $data['fecha'])
+            ->where('time', $data['hora'])
+            ->first();
+
+        if ($existe) {
+            return [
+                'error' => true,
+                'code' => 409, // conflicto
+                'message' => 'Ya existe un evento en esta sala a esa hora.',
+            ];
+        }
+
+        // Crear evento si no hay conflicto
+        $event = events::create([
             'name' => $data['nombre'],
             'mandated' => $data['encargado'],
             'room_id' => $data['sala_id'],
             'date' => $data['fecha'],
+            'time' => $data['hora'],
             'state_event_id' => $data['estado_id'],
         ]);
 
         return [
             'error' => false,
             'code' => 201,
-            'message' => 'Eventos creado con éxito',
-            'data' => $rooms,
+            'message' => 'Evento creado con éxito',
+            'data' => $event,
         ];
     }
 
@@ -126,10 +155,9 @@ class EventServices
         try {
             DB::beginTransaction();
 
-            // Buscar el programa
-            $rooms = events::find($id);
+            $event = events::find($id);
 
-            if (!$rooms) {
+            if (!$event) {
                 return [
                     "error" => true,
                     "code" => 404,
@@ -137,25 +165,26 @@ class EventServices
                 ];
             }
 
-            $rooms->update([
+            $event->update([
                 'name' => $data['nombre'],
                 'mandated' => $data['encargado'],
                 'room_id' => $data['sala_id'],
                 'date' => $data['fecha'],
+                'time' => $data['hora'],
                 'state_event_id' => $data['estado_id'],
             ]);
-            //hace commit
+
             DB::commit();
 
             return [
                 "error" => false,
                 "code" => 200,
-                "message" => "evento actualizado con éxito",
-                "data" => $rooms
+                "message" => "Evento actualizado con éxito",
+                "data" => $event
             ];
         } catch (Exception $e) {
-            //si genero error devuelve a la ultimo cambio de base de datos
             DB::rollback();
+
             return [
                 "error" => true,
                 "code" => 500,
@@ -166,17 +195,17 @@ class EventServices
 
     public function deleteEvents($id)
     {
-        $rooms = events::find($id);
+        $event = events::find($id);
 
-
-        if (!$rooms)
+        if (!$event) {
             return [
                 "error" => true,
                 "code" => 404,
                 "message" => "El evento no existe",
             ];
+        }
 
-        $rooms->delete();
+        $event->delete();
 
         return [
             "error" => false,
