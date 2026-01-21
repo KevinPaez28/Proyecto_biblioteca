@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Actions\ActionsSeeder;
 use Database\Seeders\Permissions\PermissionSeeder;
 use Database\Seeders\Role\RoleSeeder;
 use Database\Seeders\RolePermission\RolePermissionSeeder;
@@ -31,7 +32,7 @@ class DatabaseSeeder extends Seeder
             reason_status::class,
             events_rooms::class,
             status_user::class,
-
+            ActionsSeeder::class,
         ]);
 
     }

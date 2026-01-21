@@ -10,24 +10,30 @@ class historyServices
 {
     public function getHistory()
     {
-        $History = History::all();
-
-        if (count($History) == 0)
+        $history = History::with([
+            'action',
+            'user.perfil'
+        ])->get();
+    
+        if ($history->isEmpty()) {
             return [
                 "error" => false,
                 "code" => 200,
                 "message" => "No hay historial registrado",
-                "data" => $History
+                "data" => $history
             ];
-
-
+        }
+    
         return [
             "error" => false,
             "code" => 200,
             "message" => "Historiales obtenidos con éxito",
-            "data" => $History
+            "data" => $history
         ];
     }
+    
+
+
     public function CreateHistory(array $data)
     {
         $History = History::Create([

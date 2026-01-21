@@ -21,183 +21,186 @@ use App\Http\Controllers\Api\state_events\stateEventsController;
 use App\Http\Controllers\Api\states_rooms\StatesRoomsController;
 use App\Http\Controllers\Api\User\UserController;
 use App\Http\Controllers\Api\UserStatus\UserStatusController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// ================= PRUEBA =================
 Route::get('/prueba', function () {
     return response()->json(['message' => 'La API está funcionando correctamente.'], 200);
 })->middleware('throttle:2,1');
 
-// LOGIN
+// ================= AUTH =================
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/validate', [PasswordResetController::class, 'validateToken']);
 Route::post('/Reset-password', [PasswordResetController::class, 'forgotPassword']);
 Route::post('/Reset-password/change', [PasswordResetController::class, 'resetPassword']);
 
-Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
-    ->name('verification.notice');
-
-Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-    ->middleware('signed')
-    ->name('verification.verify');
-
+// ================= EMAIL =================
+Route::get('/email/verify', [EmailVerificationController::class, 'notice'])->name('verification.notice');
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware('signed')->name('verification.verify');
 Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
-    ->middleware('throttle:verification')
-    ->name('verification.send');
+->middleware('throttle:verification');
+// ================= Sin tokens =================
+Route::get('user/', [UserController::class, 'getAll']);
+Route::post('user/create', [UserController::class, 'create']);
+Route::get('roles/', [rolesController::class, 'getAll']);
+Route::get('programa/', [ProgramController::class, 'getAll']);
+Route::post('perfil/create', [ProfileController::class, 'create']);
+Route::get('ficha/', [FichaController::class, 'getAll']);
+Route::get('motivos/', [ReasonController::class, 'getAll']);
+Route::get('estadoMotivos/', [estatesController::class, 'getAll']);
+Route::get('eventos/', [EventController::class, 'getAll']);
+Route::get('eventos/today', [EventController::class, 'gettoday']);
+Route::post('asistencia/create', [assitancesController::class, 'create']);
 
 
-// CRUD Usuarios
-Route::prefix('EstadoUsuarios')->group(function () {
-    Route::get('/', [UserStatusController::class, 'getAll']);
-    Route::post('/create', [UserStatusController::class, 'create']);
-    Route::patch('/{id}', [UserStatusController::class, 'update']);
-    Route::delete('/delete/{id}', [UserStatusController::class, 'delete']);
-});
-Route::prefix('user')->group(function () {
-    Route::get('/', [UserController::class, 'getAll']);
-    Route::get('/aprendices', [UserController::class, 'apprentice']);
-    Route::get('/search', [UserController::class, 'getByinformation']);
-    Route::post('/create', [UserController::class, 'create']);
-    Route::post('/import', [UserController::class, 'import']);
-    Route::patch('/{id}', [UserController::class, 'update']);
-    Route::delete('/delete/{id}', [UserController::class, 'delete']);
-});
-// CRUD roles
-Route::prefix('roles')->group(function () {
-    Route::get('/', [rolesController::class, 'getAll']);
-    Route::get('/permisos', [rolesController::class, 'permissions']);
-    Route::post('/create', [rolesController::class, 'create']);
-    Route::patch('/{id}', [rolesController::class, 'update']);
-    Route::patch('/edit/{id}', [rolesController::class, 'editRoles']);
-    Route::delete('/delete/{id}', [rolesController::class, 'delete']);
-    
-});
+// ================= RUTAS PROTEGIDAS =================
+Route::middleware(['auth:sanctum'])->group(function () {
 
-// CRUD Programas
-Route::prefix('programa')->group(function () {
-    Route::get('/', [ProgramController::class, 'getAll']);
-    Route::post('/create', [ProgramController::class, 'create']);
-    Route::patch('/{id}', [ProgramController::class, 'update']);
-    Route::delete('/delete/{id}', [ProgramController::class, 'delete']);
-});
+    Route::prefix('EstadoUsuarios')->group(function () {
+        Route::get('/', [UserStatusController::class, 'getAll'])->middleware('permission:user-status.index');
+        Route::post('/create', [UserStatusController::class, 'create'])->middleware('permission:user-status.store');
+        Route::patch('/{id}', [UserStatusController::class, 'update'])->middleware('permission:user-status.update');
+        Route::delete('/delete/{id}', [UserStatusController::class, 'delete'])->middleware('permission:user-status.destroy');
+    });
 
-// CRUD Perfiles
-Route::prefix('perfil')->group(function () {
-    Route::get('/', [ProfileController::class, 'getAll']);
-    Route::post('/create', [ProfileController::class, 'create']);
-    Route::patch('/{id}', [ProfileController::class, 'update']);
-    Route::delete('/delete/{id}', [ProfileController::class, 'delete']);
-});
+    // --------- USUARIOS ----------
+    Route::prefix('user')->group(function () {
+        Route::get('/aprendices', [UserController::class, 'apprentice'])->middleware('permission:users.index');
+        Route::get('/search', [UserController::class, 'getByinformation'])->middleware('permission:users.search');
+        Route::post('/import', [UserController::class, 'import'])->middleware('permission:users.store');
+        Route::patch('/{id}', [UserController::class, 'update'])->middleware('permission:users.update');
+        Route::delete('/delete/{id}', [UserController::class, 'delete'])->middleware('permission:users.destroy');
+    });
 
-// CRUD Fichas
-Route::prefix('ficha')->group(function () {
-    Route::get('/', [FichaController::class, 'getAll']);
-    Route::post('/create', [FichaController::class, 'create']);
-    Route::patch('/{id}', [FichaController::class, 'update']);
-    Route::delete('/delete/{id}', [FichaController::class, 'delete']);
-});
+    // --------- ROLES ----------
+    Route::prefix('roles')->group(function () {
+        Route::get('/permisos', [rolesController::class, 'permissions']);
+        Route::post('/create', [rolesController::class, 'create'])->middleware('permission:roles.store');
+        Route::patch('/{id}', [rolesController::class, 'update'])->middleware('permission:roles.update');
+        Route::patch('/edit/{id}', [rolesController::class, 'editRoles'])->middleware('permission:roles.update');
+        Route::delete('/delete/{id}', [rolesController::class, 'delete'])->middleware('permission:roles.destroy');
+    });
 
-// CRUD Documentos
-Route::prefix('documento')->group(function () {
-    Route::get('/', [DocumentController::class, 'getAll']);
-    Route::post('/create', [DocumentController::class, 'create']);
-    Route::patch('/{id}', [DocumentController::class, 'update']);
-    Route::delete('/delete/{id}', [DocumentController::class, 'delete']);
-});
+    // --------- PROGRAMAS ----------
+    Route::prefix('programa')->group(function () {
+        Route::post('/create', [ProgramController::class, 'create'])->middleware('permission:programs.store');
+        Route::patch('/{id}', [ProgramController::class, 'update'])->middleware('permission:programs.update');
+        Route::delete('/delete/{id}', [ProgramController::class, 'delete'])->middleware('permission:programs.destroy');
+    });
 
-// CRUD Acciones
-Route::prefix('actions')->group(function () {
-    Route::get('/', [ActionsController::class, 'getAll']);
-    Route::post('/create', [ActionsController::class, 'create']);
-    Route::patch('/{id}', [ActionsController::class, 'update']);
-    Route::delete('/delete/{id}', [ActionsController::class, 'delete']);
-});
+    // --------- PERFILES ----------
+    Route::prefix('perfil')->group(function () {
+        Route::get('/', [ProfileController::class, 'getAll'])->middleware('permission:profiles.index');
+        Route::patch('/{id}', [ProfileController::class, 'update'])->middleware('permission:profiles.update');
+        Route::delete('/delete/{id}', [ProfileController::class, 'delete'])->middleware('permission:profiles.destroy');
+    });
 
-// CRUD Historial
-Route::prefix('historial')->group(function () {
-    Route::get('/', [HistoryController::class, 'getAll']);
-    Route::post('/create', [HistoryController::class, 'create']);
-    Route::patch('/{id}', [HistoryController::class, 'update']);
-    Route::delete('/delete/{id}', [HistoryController::class, 'delete']);
-});
+    // --------- FICHAS ----------
+    Route::prefix('ficha')->group(function () {
+        Route::post('/create', [FichaController::class, 'create'])->middleware('permission:fichas.store');
+        Route::patch('/{id}', [FichaController::class, 'update'])->middleware('permission:fichas.update');
+        Route::delete('/delete/{id}', [FichaController::class, 'delete'])->middleware('permission:fichas.destroy');
+    });
 
-// CRUD Horarios
-Route::prefix('horarios')->group(function () {
-    Route::get('/', [SchedulesController::class, 'getAll']);
-    Route::get('/jornadas', [SchedulesController::class, 'jornadasandhorarios']);
-    Route::post('/create', [SchedulesController::class, 'create']);
-    Route::patch('/{id}', [SchedulesController::class, 'update']);
-    Route::delete('/delete/{id}', [SchedulesController::class, 'delete']);
-});
+    // --------- DOCUMENTOS ----------
+    Route::prefix('documento')->group(function () {
+        Route::get('/', [DocumentController::class, 'getAll'])->middleware('permission:documents.index');
+        Route::post('/create', [DocumentController::class, 'create'])->middleware('permission:documents.store');
+        Route::patch('/{id}', [DocumentController::class, 'update'])->middleware('permission:documents.update');
+        Route::delete('/delete/{id}', [DocumentController::class, 'delete'])->middleware('permission:documents.destroy');
+    });
 
-// CRUD Jornadas
-Route::prefix('jornadas')->group(function () {
-    Route::get('/', [ShiftsController::class, 'getAll']);
-    Route::get('/complete', [ShiftsController::class, 'getjornadas']);
-    Route::post('/create', [ShiftsController::class, 'create']);
-    Route::patch('edit/{id}', [ShiftsController::class, 'update']);
-    Route::delete('/delete/{id}', [ShiftsController::class, 'delete']);
-});
+    // --------- ACCIONES ----------
+    Route::prefix('actions')->group(function () {
+        Route::get('/', [ActionsController::class, 'getAll'])->middleware('permission:actions.index');
+        Route::post('/create', [ActionsController::class, 'create'])->middleware('permission:actions.store');
+        Route::patch('/{id}', [ActionsController::class, 'update'])->middleware('permission:actions.update');
+        Route::delete('/delete/{id}', [ActionsController::class, 'delete'])->middleware('permission:actions.destroy');
+    });
 
-// CRUD Estados Motivos
-Route::prefix('estadoMotivos')->group(function () {
-    Route::get('/', [estatesController::class, 'getAll']);
-    Route::post('/create', [estatesController::class, 'create']);
-    Route::patch('/{id}', [estatesController::class, 'update']);
-    Route::delete('/delete/{id}', [estatesController::class, 'delete']);
-});
+    // --------- HISTORIAL ----------
+    Route::prefix('historial')->group(function () {
+        Route::get('/', [HistoryController::class, 'getAll'])->middleware('permission:history.index');
+        Route::post('/create', [HistoryController::class, 'create'])->middleware('permission:history.store');
+        Route::patch('/{id}', [HistoryController::class, 'update'])->middleware('permission:history.update');
+        Route::delete('/delete/{id}', [HistoryController::class, 'delete'])->middleware('permission:history.destroy');
+    });
 
-// CRUD Motivos
-Route::prefix('motivos')->group(function () {
-    Route::get('/', [ReasonController::class, 'getAll']);
-    Route::post('/create', [ReasonController::class, 'create']);
-    Route::patch('/{id}', [ReasonController::class, 'update']);
-    Route::delete('/delete/{id}', [ReasonController::class, 'delete']);
-});
+    // --------- HORARIOS ----------
+    Route::prefix('horarios')->group(function () {
+        Route::get('/', [SchedulesController::class, 'getAll'])->middleware('permission:schedules.index');
+        Route::get('/jornadas', [SchedulesController::class, 'jornadasandhorarios'])->middleware('permission:schedules.index');
+        Route::post('/create', [SchedulesController::class, 'create'])->middleware('permission:schedules.store');
+        Route::patch('/{id}', [SchedulesController::class, 'update'])->middleware('permission:schedules.update');
+        Route::delete('/delete/{id}', [SchedulesController::class, 'delete'])->middleware('permission:schedules.destroy');
+    });
 
-// CRUD Estados Eventos
-Route::prefix('estadoEventos')->group(function () {
-    Route::get('/', [stateEventsController::class, 'getAll']);
-    Route::post('/create', [stateEventsController::class, 'create']);
-    Route::patch('/{id}', [stateEventsController::class, 'update']);
-    Route::delete('/delete/{id}', [stateEventsController::class, 'delete']);
-});
+    // --------- JORNADAS ----------
+    Route::prefix('jornadas')->group(function () {
+        Route::get('/', [ShiftsController::class, 'getAll'])->middleware('permission:shifts.index');
+        Route::get('/complete', [ShiftsController::class, 'getjornadas'])->middleware('permission:shifts.index');
+        Route::post('/create', [ShiftsController::class, 'create'])->middleware('permission:shifts.store');
+        Route::patch('edit/{id}', [ShiftsController::class, 'update'])->middleware('permission:shifts.update');
+        Route::delete('/delete/{id}', [ShiftsController::class, 'delete'])->middleware('permission:shifts.destroy');
+    });
 
-Route::prefix('estadosalas')->group(function () {
-    Route::get('/', [StatesRoomsController::class, 'getAll']);
-    Route::post('/create', [StatesRoomsController::class, 'create']);
-    Route::patch('/{id}', [StatesRoomsController::class, 'update']);
-    Route::delete('/delete/{id}', [StatesRoomsController::class, 'delete']);
-});
+    // --------- MOTIVOS ----------
+    Route::prefix('motivos')->group(function () {
+        Route::post('/create', [ReasonController::class, 'create'])->middleware('permission:reasons.store');
+        Route::patch('/{id}', [ReasonController::class, 'update'])->middleware('permission:reasons.update');
+        Route::delete('/delete/{id}', [ReasonController::class, 'delete'])->middleware('permission:reasons.destroy');
+    });
 
-// CRUD Salas
-Route::prefix('salas')->group(function () {
-    Route::get('/', [RoomsController::class, 'getAll']);
-    Route::post('/create', [RoomsController::class, 'create']);
-    Route::patch('/{id}', [RoomsController::class, 'update']);
-    Route::delete('/delete/{id}', [RoomsController::class, 'delete']);
-});
+    // --------- ESTADOS MOTIVOS ----------
+    Route::prefix('estadoMotivos')->group(function () {
+        Route::post('/create', [estatesController::class, 'create'])->middleware('permission:reasons.store');
+        Route::patch('/{id}', [estatesController::class, 'update'])->middleware('permission:reasons.update');
+        Route::delete('/delete/{id}', [estatesController::class, 'delete'])->middleware('permission:reasons.destroy');
+    });
 
-// CRUD Eventos
-Route::prefix('eventos')->group(function () {
-    Route::get('/', [EventController::class, 'getAll']);
-    Route::get('/today', [EventController::class, 'gettoday']);
-    Route::post('/create', [EventController::class, 'create']);
-    Route::patch('/{id}', [EventController::class, 'update']);
-    Route::delete('/delete/{id}', [EventController::class, 'delete']);
-});
+    // --------- ESTADOS EVENTOS ----------
+    Route::prefix('estadoEventos')->group(function () {
+        Route::get('/', [stateEventsController::class, 'getAll'])->middleware('permission:events.index');
+        Route::post('/create', [stateEventsController::class, 'create'])->middleware('permission:events.store');
+        Route::patch('/{id}', [stateEventsController::class, 'update'])->middleware('permission:events.update');
+        Route::delete('/delete/{id}', [stateEventsController::class, 'delete'])->middleware('permission:events.destroy');
+    });
 
-Route::prefix('asistencia')->group(function () {
-    Route::get('/', [assitancesController::class, 'getAll']);
-    Route::get('/events', [assitancesController::class, 'getEvents']);
-    Route::post('/create', [assitancesController::class, 'create']);
-    Route::post('/events/create', [assitancesController::class, 'createEventAssistance']);
-    Route::patch('/{id}', [assitancesController::class, 'update']);
-    Route::delete('/delete/ficha', [assitancesController::class, 'deleteAprendices']);
-    Route::get('/total-dia', [assitancesController::class, 'getTotalByDay']);
-    Route::get('/total-semana', [assitancesController::class, 'getTotalByWeek']);
-    Route::get('/total-mes', [assitancesController::class, 'getTotalByMonth']);
-    Route::get('/total-egresados', [assitancesController::class, 'getTotalGraduates']);
-    Route::get('/estadisticas/mes', [assitancesController::class, 'getByMonth']);
-    Route::get('/estadisticas/eventos', [assitancesController::class, 'getByEvent']);
+    // --------- SALAS ----------
+    Route::prefix('salas')->group(function () {
+        Route::get('/', [RoomsController::class, 'getAll'])->middleware('permission:rooms.index');
+        Route::post('/create', [RoomsController::class, 'create'])->middleware('permission:rooms.store');
+        Route::patch('/{id}', [RoomsController::class, 'update'])->middleware('permission:rooms.update');
+        Route::delete('/delete/{id}', [RoomsController::class, 'delete'])->middleware('permission:rooms.destroy');
+    });
+
+    // --------- ESTADOS SALAS ----------
+    Route::prefix('estadosalas')->group(function () {
+        Route::get('/', [StatesRoomsController::class, 'getAll'])->middleware('permission:rooms.index');
+        Route::post('/create', [StatesRoomsController::class, 'create'])->middleware('permission:rooms.store');
+        Route::patch('/{id}', [StatesRoomsController::class, 'update'])->middleware('permission:rooms.update');
+        Route::delete('/delete/{id}', [StatesRoomsController::class, 'delete'])->middleware('permission:rooms.destroy');
+    });
+
+    // --------- EVENTOS ----------
+    Route::prefix('eventos')->group(function () {
+        Route::post('/create', [EventController::class, 'create'])->middleware('permission:events.store');
+        Route::patch('/{id}', [EventController::class, 'update'])->middleware('permission:events.update');
+        Route::delete('/delete/{id}', [EventController::class, 'delete'])->middleware('permission:events.destroy');
+    });
+
+    // --------- ASISTENCIAS ----------
+    Route::prefix('asistencia')->group(function () {
+        Route::get('/', [assitancesController::class, 'getAll'])->middleware('permission:assistances.index');
+        Route::get('/events', [assitancesController::class, 'getEvents'])->middleware('permission:assistances.index');
+        Route::post('/events/create', [assitancesController::class, 'createEventAssistance'])->middleware('permission:assistances.store');
+        Route::patch('/{id}', [assitancesController::class, 'update'])->middleware('permission:assistances.update');
+        Route::delete('/delete/ficha', [assitancesController::class, 'deleteAprendices'])->middleware('permission:assistances.destroy');
+        Route::get('/total-dia', [assitancesController::class, 'getTotalByDay'])->middleware('permission:assistances.index');
+        Route::get('/total-semana', [assitancesController::class, 'getTotalByWeek'])->middleware('permission:assistances.index');
+        Route::get('/total-mes', [assitancesController::class, 'getTotalByMonth'])->middleware('permission:assistances.index');
+        Route::get('/total-egresados', [assitancesController::class, 'getTotalGraduates'])->middleware('permission:assistances.index');
+        Route::get('/estadisticas/mes', [assitancesController::class, 'getByMonth'])->middleware('permission:assistances.index');
+        Route::get('/estadisticas/eventos', [assitancesController::class, 'getByEvent'])->middleware('permission:assistances.index');
+    });
 });
