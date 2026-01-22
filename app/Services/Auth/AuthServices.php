@@ -31,14 +31,13 @@ class AuthServices
             ];
         }
 
-        // VALIDAR QUE SEA ADMIN
-        if (!$user->hasRole('Administrador')) {
+        if (!$user->hasAnyRole(['Administrador', 'Ayudante'])) {
             return [
                 "error" => true,
                 "code" => 403,
                 "message" => "No tienes permisos para acceder.",
             ];
-        }
+        }        
 
         if (!$user->perfil) {
             return [
@@ -49,6 +48,7 @@ class AuthServices
         }
 
         $perfil = $user->perfil->name;
+        $perfilApellido = $user->perfil->last_name; // Apellido
 
         $roleUser = $user->roles->first();
 
@@ -88,6 +88,7 @@ class AuthServices
             "data" => [
                 'id' => $user->id,
                 'names' => $perfil,
+                'last_name' => $perfilApellido, // agregado
                 'role_id' => $roleUser->id,
                 'permissions' => $permissions->pluck('name'),
                 'cookieToken' => $cookieToken,

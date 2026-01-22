@@ -35,60 +35,89 @@ class UserService
         ];
     }
 
+
     public function CreateUser(array $data)
     {
-        $user = User::create([
-            'document'  => $data['documento'],
-            'email'     => $data['correo'],
-            'password'  => bcrypt($data['contrasena']),
-            'status_id' => 1,
-        ]);
+        DB::beginTransaction(); // Inicia transacción
 
-        Profiles::create([
-            'usuario_id' => $user->id,
-            'name'       => $data['nombres'],
-            'last_name'  => $data['apellidos'],
-            'phone'      => $data['telefono'],
-        ]);
-
-        $rolId = $data['rol'];
-        $rolModel = Role::find($rolId);
-
-        if (!$rolModel) {
-            return [
-                'error'   => true,
-                'code'    => 404,
-                'message' => "Rol no encontrado con ID: $rolId",
-            ];
-        }
-
-        $user->assignRole($rolModel->name);
-
-        if (!empty($data['ficha_id'])) {
-            ficha_user::create([
-                'usuario_id' => $user->id,
-                'ficha_id'   => $data['ficha_id'],
+        try {
+            // Crea el usuario
+            $user = User::create([
+                'document'  => $data['documento'],
+                'email'     => $data['correo'],
+                'password'  => bcrypt($data['contrasena']),
+                'status_id' => 1,
             ]);
-        }
 
-        if ($rolModel->name === 'Administrador' || $rolModel->name === 'Ayudante') {
-            $user->sendEmailVerificationNotification();
+            // Crea el perfil
+            Profiles::create([
+                'usuario_id' => $user->id,
+                'name'       => $data['nombres'],
+                'last_name'  => $data['apellidos'],
+                'phone'      => $data['telefono'],
+            ]);
 
+            // Asigna rol
+            $rolId = $data['rol'];
+            $rolModel = Role::find($rolId);
+            if (!$rolModel) {
+                DB::rollBack();
+                return [
+                    'error'   => true,
+                    'code'    => 404,
+                    'message' => "Rol no encontrado con ID: $rolId",
+                ];
+            }
+
+            $user->assignRole($rolModel->name);
+
+            // Relación con ficha
+            if (!empty($data['ficha_id'])) {
+                ficha_user::create([
+                    'usuario_id' => $user->id,
+                    'ficha_id'   => $data['ficha_id'],
+                ]);
+            }
+
+            // Solo para Admin o Ayudante: enviar correo
+            if ($rolModel->name === 'Administrador' || $rolModel->name === 'Ayudante') {
+                try {
+                    $user->sendEmailVerificationNotification();
+                } catch (\Exception $e) {
+                    DB::rollBack(); // Revertir todo
+                    return [
+                        'error'   => true,
+                        'code'    => 500,
+                        'message' => 'No se pudo enviar el correo de verificación: ' . $e->getMessage(),
+                    ];
+                }
+
+                DB::commit(); 
+                return [
+                    'error'   => false,
+                    'code'    => 201,
+                    'message' => 'Usuario creado correctamente. Revisa tu correo para verificar la cuenta.',
+                    'data'    => $user,
+                ];
+            }
+
+            DB::commit(); // Todo OK para otros roles
             return [
                 'error'   => false,
                 'code'    => 201,
-                'message' => 'Usuario creado correctamente. Revisa tu correo para verificar la cuenta.',
+                'message' => 'Usuario creado correctamente.',
                 'data'    => $user,
             ];
+        } catch (\Exception $e) {
+            DB::rollBack(); // Revertir todo en caso de cualquier error
+            return [
+                'error'   => true,
+                'code'    => 500,
+                'message' => 'Error al crear el usuario: ' . $e->getMessage(),
+            ];
         }
-
-        return [
-            'error'   => false,
-            'code'    => 201,
-            'message' => 'Usuario creado correctamente.',
-            'data'    => $user,
-        ];
     }
+
 
     // =================== MODIFICADO PARA PAGINACIÓN ===================
     public function getAllInformation(array $filters = [], $perPage = 10)

@@ -11,10 +11,16 @@ class PermissionSeeder extends Seeder
     {
         $permissions = [
 
+            // ================= AUTH =================
+            ['name' => 'auth.login', 'description' => 'Iniciar sesión'],
+            ['name' => 'auth.reset-password', 'description' => 'Solicitar recuperación de contraseña'],
+            ['name' => 'auth.reset-password.change', 'description' => 'Cambiar contraseña'],
+            ['name' => 'auth.validate-token', 'description' => 'Validar token de recuperación'],
+
             ['name' => 'user-status.index', 'description' => 'Ver estados de usuario'],
             ['name' => 'user-status.store', 'description' => 'Crear estado de usuario'],
             ['name' => 'user-status.update', 'description' => 'Actualizar estado de usuario'],
-            ['name' => 'user-status.destroy', 'description' => 'Eliminar estado de usuario'],
+            ['name' => 'user-sta    tus.destroy', 'description' => 'Eliminar estado de usuario'],
 
             // ================= USUARIOS =================
             ['name' => 'users.index', 'description' => 'Ver listado de usuarios'],

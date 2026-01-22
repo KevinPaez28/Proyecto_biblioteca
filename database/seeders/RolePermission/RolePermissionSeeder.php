@@ -23,6 +23,10 @@ class RolePermissionSeeder extends Seeder
         $administrador->syncPermissions(Permission::all());
         $ayudante->syncPermissions([
 
+            'auth.login',
+            'auth.reset-password',
+            'auth.reset-password.change',
+            'auth.validate-token',
             'users.index',
             'users.store',
             'users.update',
@@ -33,9 +37,9 @@ class RolePermissionSeeder extends Seeder
             'programs.index',
 
             'profiles.index',
-      
+
             'fichas.index',
-       
+
             'documents.index',
 
             'shifts.index',

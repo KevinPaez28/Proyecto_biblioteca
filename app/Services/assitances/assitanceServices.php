@@ -2,10 +2,14 @@
 
 namespace App\Services\assitances;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Events\EventAssistanceCreated;
 use App\Models\assitances\assitances;
 use App\Models\Ficha\Ficha;
 use App\Models\Ficha_users\ficha_user;
+use App\Models\Reasons\reasons;
 use App\Models\Schedules\Schedules;
 use App\Models\Shifts\Shifts;
 use App\Models\User\User;
@@ -156,10 +160,88 @@ class assitanceServices
         ];
     }
 
+    public function exportAssistances(array $filters = [])
+    {
+        // 🔍 Traer asistencias filtradas igual que en getAssistances
+        $query = assitances::with([
+            'user.perfil',
+            'user.fichas',
+            'user.roles',
+            'event'
+        ])->whereNotNull('event_id');
 
+        if (!empty($filters['nombre'])) {
+            $query->whereHas('user.perfil', fn($q) => $q->where('name', 'like', '%' . $filters['nombre'] . '%'));
+        }
 
+        if (!empty($filters['apellido'])) {
+            $query->whereHas('user.perfil', fn($q) => $q->where('last_name', 'like', '%' . $filters['apellido'] . '%'));
+        }
 
+        if (!empty($filters['documento'])) {
+            $query->whereHas('user', fn($q) => $q->where('document', 'like', '%' . $filters['documento'] . '%'));
+        }
 
+        if (!empty($filters['ficha'])) {
+            $query->whereHas('user.fichas', fn($q) => $q->where('ficha', 'like', '%' . $filters['ficha'] . '%'));
+        }
+
+        if (!empty($filters['fecha'])) {
+            $query->whereDate('created_at', $filters['fecha']);
+        }
+
+        if (!empty($filters['evento'])) {
+            $query->whereHas('event', fn($q) => $q->where('name', 'like', '%' . $filters['evento'] . '%'));
+        }
+
+        if (!empty($filters['rol'])) {
+            $query->whereHas('user.roles', fn($q) => $q->where('name', $filters['rol']));
+        }
+
+        $asistencias = $query->get();
+
+        // ================= GENERAR EXCEL =================
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Encabezados
+        $sheet->setCellValue('A1', 'Ficha');
+        $sheet->setCellValue('B1', 'Documento');
+        $sheet->setCellValue('C1', 'Nombre');
+        $sheet->setCellValue('D1', 'Apellido');
+        $sheet->setCellValue('E1', 'Fecha');
+        $sheet->setCellValue('F1', 'Evento');
+        $sheet->setCellValue('G1', 'Rol');
+
+        $fila = 2;
+        foreach ($asistencias as $a) {
+            $sheet->setCellValue('A' . $fila, optional($a->user->fichas->first())->ficha ?? '');
+            $sheet->setCellValue('B' . $fila, $a->user->document ?? '');
+            $sheet->setCellValue('C' . $fila, $a->user->perfil->name ?? '');
+            $sheet->setCellValue('D' . $fila, $a->user->perfil->last_name ?? '');
+            $sheet->setCellValue('E' . $fila, $a->created_at);
+            $sheet->setCellValue('F' . $fila, $a->event->name ?? '');
+            $sheet->setCellValue('G' . $fila, optional($a->user->roles->first())->name ?? '');
+            $fila++;
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $fileName = 'Asistencias_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        $responseExcel = new StreamedResponse(function () use ($writer) {
+            $writer->save('php://output');
+        });
+
+        $responseExcel->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $responseExcel->headers->set('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+
+        return [
+            'error' => false,
+            'code' => 200,
+            'message' => 'Excel generado correctamente',
+            'data' => $responseExcel
+        ];
+    }
 
     public function getTotalByDay()
     {
@@ -278,6 +360,7 @@ class assitanceServices
 
     public function createByEventAndFicha(array $data): array
     {
+        // ================= VALIDACIÓN BÁSICA =================
         if (empty($data['event_id']) || empty($data['ficha_id'])) {
             return [
                 'error'   => true,
@@ -291,6 +374,18 @@ class assitanceServices
         $created = [];
         $skipped = [];
 
+        // ================= VALIDAR MOTIVO "EVENTO" =================
+        $motivoEvento = reasons::whereRaw('LOWER(name) = ?', ['evento'])->first();
+
+        if (!$motivoEvento) {
+            return [
+                'error'   => true,
+                'code'    => 400,
+                'message' => 'No existe un motivo llamado "Evento" en el sistema'
+            ];
+        }
+
+        // ================= VALIDAR HORARIO ACTIVO =================
         $horaActual = now()->format('H:i');
 
         $horario = Schedules::where('start_time', '<=', $horaActual)
@@ -305,7 +400,9 @@ class assitanceServices
             ];
         }
 
+        // ================= VALIDAR JORNADA =================
         $jornada = $horario->shifts()->first();
+
         if (!$jornada) {
             return [
                 'error'   => true,
@@ -314,7 +411,9 @@ class assitanceServices
             ];
         }
 
-        $usuariosIds = ficha_user::where('ficha_id', $fichaId)->pluck('usuario_id');
+        // ================= USUARIOS DE LA FICHA =================
+        $usuariosIds = ficha_user::where('ficha_id', $fichaId)
+            ->pluck('usuario_id');
 
         if ($usuariosIds->isEmpty()) {
             return [
@@ -326,7 +425,9 @@ class assitanceServices
 
         $usuarios = User::whereIn('id', $usuariosIds)->get();
 
+        // ================= REGISTRO DE ASISTENCIAS =================
         foreach ($usuarios as $usuario) {
+
             $existe = assitances::where('user_id', $usuario->id)
                 ->where('working_day_id', $jornada->id)
                 ->whereDate('created_at', today())
@@ -341,12 +442,13 @@ class assitanceServices
                 'user_id'        => $usuario->id,
                 'working_day_id' => $jornada->id,
                 'event_id'       => $eventId,
-                'reason_id'      => 1,
+                'reason_id'      => $motivoEvento->id,
             ]);
 
             $created[] = $usuario->perfil->name;
         }
 
+        // ================= RESPUESTA FINAL =================
         return [
             'error'   => false,
             'code'    => 201,

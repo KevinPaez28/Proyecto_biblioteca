@@ -8,7 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class events extends Model
 {
-    protected $fillable = ['name', 'mandated', 'room_id', 'date', 'time', 'state_event_id'];
+    protected $fillable = [
+        'name',
+        'mandated',
+        'room_id',
+        'date',
+        'start_time',   
+        'end_time',     
+        'state_event_id'
+    ];
 
     public function state()
     {
