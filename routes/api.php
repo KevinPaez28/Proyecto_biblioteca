@@ -51,6 +51,7 @@ Route::get('estadoMotivos/', [estatesController::class, 'getAll']);
 Route::get('eventos/', [EventController::class, 'getAll']);
 Route::get('eventos/today', [EventController::class, 'gettoday']);
 Route::post('asistencia/create', [assitancesController::class, 'create']);
+Route::get('asistencia/export', [assitancesController::class, 'getexport']);   
 
 
 // ================= RUTAS PROTEGIDAS =================
@@ -192,7 +193,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // --------- ASISTENCIAS ----------
     Route::prefix('asistencia')->group(function () {
         Route::get('/', [assitancesController::class, 'getAll'])->middleware('permission:assistances.index');
-        Route::get('/export', [assitancesController::class, 'getexport'])->middleware('permission:assistances.index');   
         Route::get('/events', [assitancesController::class, 'getEvents'])->middleware('permission:assistances.index');
         Route::post('/events/create', [assitancesController::class, 'createEventAssistance'])->middleware('permission:assistances.store');
         Route::patch('/{id}', [assitancesController::class, 'update'])->middleware('permission:assistances.update');

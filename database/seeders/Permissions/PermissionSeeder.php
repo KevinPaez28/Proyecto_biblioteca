@@ -20,7 +20,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'user-status.index', 'description' => 'Ver estados de usuario'],
             ['name' => 'user-status.store', 'description' => 'Crear estado de usuario'],
             ['name' => 'user-status.update', 'description' => 'Actualizar estado de usuario'],
-            ['name' => 'user-sta    tus.destroy', 'description' => 'Eliminar estado de usuario'],
+            ['name' => 'user-status.destroy', 'description' => 'Eliminar estado de usuario'],
 
             // ================= USUARIOS =================
             ['name' => 'users.index', 'description' => 'Ver listado de usuarios'],

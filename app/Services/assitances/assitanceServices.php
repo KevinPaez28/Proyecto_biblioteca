@@ -16,6 +16,7 @@ use App\Models\User\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class assitanceServices
 {
@@ -160,88 +161,95 @@ class assitanceServices
         ];
     }
 
+
+
     public function exportAssistances(array $filters = [])
     {
-        // 🔍 Traer asistencias filtradas igual que en getAssistances
-        $query = assitances::with([
-            'user.perfil',
-            'user.fichas',
-            'user.roles',
-            'event'
-        ])->whereNotNull('event_id');
+        try {
+            ob_end_clean();
 
-        if (!empty($filters['nombre'])) {
-            $query->whereHas('user.perfil', fn($q) => $q->where('name', 'like', '%' . $filters['nombre'] . '%'));
+            $query = assitances::with([  
+                'user.perfil',
+                'user.fichas',
+                'user.roles',
+                'event'
+            ])->whereNotNull('event_id');
+
+            if (!empty($filters['fecha_inicio']) && !empty($filters['fecha_fin'])) {
+                $query->whereBetween('created_at', [
+                    $filters['fecha_inicio'],
+                    $filters['fecha_fin'] . ' 23:59:59'
+                ]);
+            }
+
+            $asistencias = $query->get();
+
+            // 🔑 VALIDACIÓN: Si no hay asistencias
+            if ($asistencias->isEmpty()) {
+                return [
+                    'error' => true,
+                    'code' => 404,
+                    'message' => 'No se encontraron asistencias en el rango de fechas seleccionado'
+                ];
+            }
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // Encabezados
+            $sheet->setCellValue('A1', 'Ficha');
+            $sheet->setCellValue('B1', 'Documento');
+            $sheet->setCellValue('C1', 'Nombre');
+            $sheet->setCellValue('D1', 'Apellido');
+            $sheet->setCellValue('E1', 'Fecha');
+            $sheet->setCellValue('F1', 'Evento');
+            $sheet->setCellValue('G1', 'Rol');
+            $sheet->getStyle('A1:G1')->getFont()->setBold(true);
+
+            $fila = 2;
+            foreach ($asistencias as $a) {
+                $sheet->setCellValue('A' . $fila, optional($a->user->fichas->first())->ficha ?? '');
+                $sheet->setCellValue('B' . $fila, $a->user->document ?? '');
+                $sheet->setCellValue('C' . $fila, $a->user->perfil->name ?? '');
+                $sheet->setCellValue('D' . $fila, $a->user->perfil->last_name ?? '');
+
+                $sheet->setCellValue('E' . $fila, $a->created_at);
+                $sheet->getStyle('E' . $fila)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_DATETIME);
+
+                $sheet->setCellValue('F' . $fila, $a->event->name ?? '');
+                $sheet->setCellValue('G' . $fila, optional($a->user->roles->first())->name ?? '');
+                $fila++;
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $fileName = 'Asistencias_' . date('Y-m-d') . '.xlsx';
+
+            $responseExcel = new StreamedResponse(function () use ($writer) {
+                $writer->save('php://output');
+            });
+
+            $responseExcel->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            $responseExcel->headers->set('Content-Disposition', 'attachment; filename*=UTF-8\'\'' . $fileName);
+            $responseExcel->headers->set('Content-Transfer-Encoding', 'binary');
+            $responseExcel->headers->set('Pragma', 'public');
+            $responseExcel->headers->set('Cache-Control', 'max-age=0, no-cache, no-store, must-revalidate');
+            $responseExcel->headers->set('Expires', '0');
+
+            return [
+                'error' => false,
+                'code' => 200,
+                'message' => 'Excel generado correctamente',
+                'data' => $responseExcel
+            ];
+        } catch (Exception $e) {
+            return [
+                'error' => true,
+                'code' => 500,
+                'message' => $e->getMessage()
+            ];
         }
-
-        if (!empty($filters['apellido'])) {
-            $query->whereHas('user.perfil', fn($q) => $q->where('last_name', 'like', '%' . $filters['apellido'] . '%'));
-        }
-
-        if (!empty($filters['documento'])) {
-            $query->whereHas('user', fn($q) => $q->where('document', 'like', '%' . $filters['documento'] . '%'));
-        }
-
-        if (!empty($filters['ficha'])) {
-            $query->whereHas('user.fichas', fn($q) => $q->where('ficha', 'like', '%' . $filters['ficha'] . '%'));
-        }
-
-        if (!empty($filters['fecha'])) {
-            $query->whereDate('created_at', $filters['fecha']);
-        }
-
-        if (!empty($filters['evento'])) {
-            $query->whereHas('event', fn($q) => $q->where('name', 'like', '%' . $filters['evento'] . '%'));
-        }
-
-        if (!empty($filters['rol'])) {
-            $query->whereHas('user.roles', fn($q) => $q->where('name', $filters['rol']));
-        }
-
-        $asistencias = $query->get();
-
-        // ================= GENERAR EXCEL =================
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        // Encabezados
-        $sheet->setCellValue('A1', 'Ficha');
-        $sheet->setCellValue('B1', 'Documento');
-        $sheet->setCellValue('C1', 'Nombre');
-        $sheet->setCellValue('D1', 'Apellido');
-        $sheet->setCellValue('E1', 'Fecha');
-        $sheet->setCellValue('F1', 'Evento');
-        $sheet->setCellValue('G1', 'Rol');
-
-        $fila = 2;
-        foreach ($asistencias as $a) {
-            $sheet->setCellValue('A' . $fila, optional($a->user->fichas->first())->ficha ?? '');
-            $sheet->setCellValue('B' . $fila, $a->user->document ?? '');
-            $sheet->setCellValue('C' . $fila, $a->user->perfil->name ?? '');
-            $sheet->setCellValue('D' . $fila, $a->user->perfil->last_name ?? '');
-            $sheet->setCellValue('E' . $fila, $a->created_at);
-            $sheet->setCellValue('F' . $fila, $a->event->name ?? '');
-            $sheet->setCellValue('G' . $fila, optional($a->user->roles->first())->name ?? '');
-            $fila++;
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $fileName = 'Asistencias_' . date('Y-m-d_H-i-s') . '.xlsx';
-
-        $responseExcel = new StreamedResponse(function () use ($writer) {
-            $writer->save('php://output');
-        });
-
-        $responseExcel->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        $responseExcel->headers->set('Content-Disposition', 'attachment; filename="' . $fileName . '"');
-
-        return [
-            'error' => false,
-            'code' => 200,
-            'message' => 'Excel generado correctamente',
-            'data' => $responseExcel
-        ];
     }
+
 
     public function getTotalByDay()
     {

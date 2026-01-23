@@ -50,13 +50,8 @@ class assitancesController extends Controller
     public function getexport(Request $request)
     {
         $filters = $request->only([
-            'nombre',
-            'apellido',
-            'documento',
-            'ficha',
-            'fecha',
-            'motivo',
-            'rol'
+            'fecha_inicio',
+            'fecha_fin',
         ]);
 
         $response = $this->assitancesServices->exportAssistances($filters);
@@ -65,9 +60,9 @@ class assitancesController extends Controller
             return ResponseFormatter::error($response['message'], $response['code']);
         }
 
-        // El Service ya devuelve directamente un StreamedResponse con el Excel
         return $response['data'];
     }
+
 
     public function getEvents(Request $request)
     {
