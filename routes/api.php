@@ -67,6 +67,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // --------- USUARIOS ----------
     Route::prefix('user')->group(function () {
         Route::get('/aprendices', [UserController::class, 'apprentice'])->middleware('permission:users.index');
+        Route::get('profile/{id}', [UserController::class, 'profiles'])->middleware('permission:users.store');
         Route::get('/search', [UserController::class, 'getByinformation'])->middleware('permission:users.search');
         Route::post('/import', [UserController::class, 'import'])->middleware('permission:users.store');
         Route::patch('/{id}', [UserController::class, 'update'])->middleware('permission:users.update');

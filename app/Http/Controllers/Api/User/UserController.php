@@ -35,6 +35,18 @@ class UserController extends Controller
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
+    public function profiles(string $id)
+{
+    $response = $this->userService->getUserById($id);
+
+    if ($response['error']) {
+        return ResponseFormatter::error($response['message'], $response['code']);
+    }
+
+    return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+}
+
+
     public function getByinformation(Request $request)
     {
         $filters = $request->only([

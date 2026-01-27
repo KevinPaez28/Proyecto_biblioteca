@@ -92,7 +92,7 @@ class UserService
                     ];
                 }
 
-                DB::commit(); 
+                DB::commit();
                 return [
                     'error'   => false,
                     'code'    => 201,
@@ -118,6 +118,34 @@ class UserService
         }
     }
 
+    public function getUserById($id)
+    {
+        $user = User::with(['perfil', 'roles', 'status'])->find($id);
+
+        if (!$user) {
+            return [
+                "error" => true,
+                "code" => 404,
+                "message" => "Usuario no encontrado",
+            ];
+        }
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Usuario obtenido con éxito",
+            "data" => [
+                'id' => $user->id,
+                'document' => $user->document,
+                'first_name' => $user->perfil->name ?? '',
+                'last_name' => $user->perfil->last_name ?? '',
+                'email' => $user->email,
+                'phone_number' => $user->perfil->phone ?? '',
+                'rol' => $user->roles->pluck('name')->implode(', '),
+                'estado' => $user->status->status ?? '',
+            ]
+        ];
+    }
 
     // =================== MODIFICADO PARA PAGINACIÓN ===================
     public function getAllInformation(array $filters = [], $perPage = 10)
