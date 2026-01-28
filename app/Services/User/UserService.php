@@ -9,6 +9,8 @@ use App\Models\User\User;
 use App\Models\Perfiles\Perfiles;
 use App\Models\Profiles\Profiles;
 use App\Models\Program\Program;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -83,7 +85,7 @@ class UserService
             if ($rolModel->name === 'Administrador' || $rolModel->name === 'Ayudante') {
                 try {
                     $user->sendEmailVerificationNotification();
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     DB::rollBack(); // Revertir todo
                     return [
                         'error'   => true,
@@ -108,7 +110,7 @@ class UserService
                 'message' => 'Usuario creado correctamente.',
                 'data'    => $user,
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack(); // Revertir todo en caso de cualquier error
             return [
                 'error'   => true,
@@ -354,7 +356,7 @@ class UserService
                 "message" => "Usuario actualizado correctamente",
                 "data" => $user->load(['perfil', 'roles', 'fichas.programa'])
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
 
             return [
@@ -365,11 +367,41 @@ class UserService
         }
     }
 
+    public function changePassword($data, $id)
+{
+    $user = User::find($id);
 
+    if (!$user) {
+        return [
+            "error" => true,
+            "code" => 404,
+            "message" => "Usuario no encontrado"
+        ];
+    }
+
+    // Verificar contraseña actual
+    if (!Hash::check($data['current_password'], $user->password)) {
+        throw ValidationException::withMessages([
+            'current_password' => ['La contraseña actual es incorrecta']
+        ]);
+    }
+
+    // Guardar nueva contraseña
+    $user->password = Hash::make($data['new_password']);
+    $user->save();
+
+    return [
+        "error" => false,
+        "code" => 200,
+        "message" => "Contraseña actualizada correctamente"
+    ];
+}
+    
+    
     public function deleteUser($id)
     {
         $user = User::withCount('assistances')->find($id);
-
+    
         if (!$user) {
             return [
                 "error" => true,
@@ -377,7 +409,7 @@ class UserService
                 "message" => "El usuario no existe",
             ];
         }
-
+    
         if ($user->assistances_count > 0) {
             return [
                 "error" => true,
@@ -385,33 +417,41 @@ class UserService
                 "message" => "No se puede eliminar el usuario porque tiene asistencias registradas",
             ];
         }
-
+    
         try {
             DB::beginTransaction();
-
-            // Eliminar profile asociado
-            $profile = $user->perfil; // si tienes relación definida en User -> profile()
-            if ($profile) {
-                $profile->delete();
+    
+            // 🔹 BORRAR PERFIL (usa tu relación correcta)
+            if ($user->perfil) {
+                $user->perfil->delete();
             }
-
-            // Eliminar el usuario
+    
+            // 🔹 BORRAR RELACIÓN CON FICHAS (tabla pivote)
+            $user->fichas()->detach();
+    
+            // 🔹 BORRAR ROLES (spatie)
+            $user->roles()->detach();
+    
+            // 🔹 BORRAR USUARIO
             $user->delete();
-
+    
             DB::commit();
-
+    
             return [
                 "error" => false,
                 "code" => 200,
-                "message" => "Usuario y profile eliminados con éxito",
+                "message" => "Usuario eliminado correctamente",
             ];
+    
         } catch (Exception $e) {
-            DB::rollback();
+            DB::rollBack();
+    
             return [
                 "error" => true,
                 "code" => 500,
-                "message" => "Ocurrió un error al eliminar el usuario",
+                "message" => $e->getMessage(), // ← esto nos dice el error real
             ];
         }
     }
+    
 }

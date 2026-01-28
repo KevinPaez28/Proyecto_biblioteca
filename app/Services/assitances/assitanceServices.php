@@ -20,7 +20,7 @@ use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class assitanceServices
 {
-    public function getAssistances(array $filters = [])
+    public function getAssistances(array $filters = [], int $page = 1, int $perPage = 10)
     {
         $query = DB::table('assistances as a')
             ->leftJoin('users as u', 'a.user_id', '=', 'u.id')
@@ -38,12 +38,15 @@ class assitanceServices
                 DB::raw('COALESCE(u.document, "") as Documento'),
                 DB::raw('COALESCE(p.name, "") as FirstName'),
                 DB::raw('COALESCE(p.last_name, "") as LastName'),
+                DB::raw('DATE(a.created_at) as Date'),
+                DB::raw('TIME(a.created_at) as Time'),
                 'a.created_at as DateTime',
                 DB::raw('COALESCE(r.name, "") as Reason'),
-                DB::raw('COALESCE(ro.name, "") as Role')
+                DB::raw('COALESCE(ro.name, "") as Role'),
+                'a.id'
             );
 
-        // 🔍 FILTROS
+        // 🔍 FILTROS (igual que ya tenías)
         if (!empty($filters['nombre'])) {
             $query->where('p.name', 'like', '%' . $filters['nombre'] . '%');
         }
@@ -72,15 +75,31 @@ class assitanceServices
             $query->where('ro.name', $filters['rol']);
         }
 
-        $data = $query->get();
+        // 🔥 PAGINACIÓN
+        $assistances = $query
+            ->orderBy('a.created_at', 'desc') // opcional, para que salgan de la más reciente
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $records = $assistances->items(); // recibe colección ya paginada
+        $meta = [
+            "current_page" => $assistances->currentPage(),
+            "last_page"    => $assistances->lastPage(),
+            "per_page"     => $assistances->perPage(),
+            "total"        => $assistances->total(),
+        ];
+
+        $isEmpty = count($records) === 0;
 
         return [
-            "error" => false,
-            "code" => 200,
-            "message" => $data->isEmpty()
+            "error"   => false,
+            "code"    => 200,
+            "message" => $isEmpty
                 ? "No hay asistencias registradas"
                 : "Asistencias obtenidas con éxito",
-            "data" => $data
+            "data"    => [
+                "records" => $records,
+                "meta"    => $meta
+            ]
         ];
     }
     public function getEventAttendances(array $filters = [])
@@ -168,7 +187,7 @@ class assitanceServices
         try {
             ob_end_clean();
 
-            $query = assitances::with([  
+            $query = assitances::with([
                 'user.perfil',
                 'user.fichas',
                 'user.roles',

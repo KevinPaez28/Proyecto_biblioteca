@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\User;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Imports\ImportApprenticeRequest;
+use App\Http\Requests\Reset\ChangePasswordRequest;
 use App\Http\Requests\User\updateRequest;
 use App\Http\Requests\User\UserRequest;
 use App\Services\ImportExcel\ImportExcelService;
@@ -118,6 +119,17 @@ class UserController extends Controller
         $data = $request->validated();
 
         $response = $this->userService->updateUser($data, $id);
+
+        if ($response['error'])
+            return ResponseFormatter::error($response['message'], $response['code']);
+
+        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+    }
+    public function newpassword(ChangePasswordRequest $request, string $id)
+    {
+        $data = $request->validated();
+
+        $response = $this->userService->changePassword($data, $id);
 
         if ($response['error'])
             return ResponseFormatter::error($response['message'], $response['code']);

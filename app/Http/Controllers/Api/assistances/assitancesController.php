@@ -32,7 +32,11 @@ class assitancesController extends Controller
             'rol'
         ]);
 
-        $response = $this->assitancesServices->getAssistances($filters);
+        // Leer `page` y `per_page`
+        $page     = $request->get('page', 1);
+        $per_page = $request->get('per_page', 10);
+
+        $response = $this->assitancesServices->getAssistances($filters, $page, $per_page);
 
         if ($response['error']) {
             return ResponseFormatter::error(

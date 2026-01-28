@@ -25,7 +25,7 @@ class updateProfile extends FormRequest
         return [
             'usuario'   => "required|integer|exists:users,{$id}",
             'nombre'    => 'required|string|max:100',
-            'apellido'  => 'required|string|max:100',
+            'apellidos'  => 'required|string|max:100',
             'telefono'   => 'string|max:10',
             'correo'    => 'required|email|max:255|unique:profiles,email',
             'programa'  => 'required|integer|exists:ficha,id',
