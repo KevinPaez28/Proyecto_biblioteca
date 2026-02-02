@@ -31,45 +31,46 @@ class SchedulesServices
     }
     public function getJornadasAndHorarios($search = null)
     {
-        $shifts = Shifts::all();
-
-        if ($shifts->isEmpty()) {
+        $schedules = Schedules::all();
+    
+        if ($schedules->isEmpty()) {
             return [
                 "error" => false,
                 "code" => 200,
-                "message" => "No hay jornadas registradas",
+                "message" => "No hay horarios registrados",
                 "data" => []
             ];
         }
-
+    
         $data = [];
         $searchLower = $search ? strtolower($search) : null;
-
-        foreach ($shifts as $shift) {
-
-            $horario = Schedules::find($shift->schedules_id);
-
-            if (!$horario) continue;
-
+    
+        foreach ($schedules as $schedule) {
+    
+            // Buscar si existe una jornada asociada a este horario
+            $shift = Shifts::where('schedules_id', $schedule->id)->first();
+    
+            $jornadaNombre = $shift ? $shift->name : "Sin jornada";
+    
             // 🔍 FILTRO BACKEND
             if ($searchLower) {
                 if (
-                    !str_contains(strtolower($horario->name), $searchLower) &&
-                    !str_contains(strtolower($shift->name), $searchLower)
+                    !str_contains(strtolower($schedule->name), $searchLower) &&
+                    !str_contains(strtolower($jornadaNombre), $searchLower)
                 ) {
                     continue;
                 }
             }
-
+    
             $data[] = [
-                'id'         => $shift->id,
-                'jornada'    => $shift->name,
-                'horario'    => $horario->name,
-                'start_time' => date("g:i A", strtotime($horario->start_time)),
-                'end_time'   => date("g:i A", strtotime($horario->end_time)),
+                'id'         => $schedule->id,
+                'jornada'    => $jornadaNombre,
+                'horario'    => $schedule->name,
+                'start_time' => date("g:i A", strtotime($schedule->start_time)),
+                'end_time'   => date("g:i A", strtotime($schedule->end_time)),
             ];
         }
-
+    
         return [
             "error" => false,
             "code" => 200,
@@ -77,6 +78,7 @@ class SchedulesServices
             "data" => $data
         ];
     }
+    
 
 
     public function CreateSchedules(array $data)

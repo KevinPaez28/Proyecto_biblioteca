@@ -89,24 +89,26 @@ class ProgramServices
     public function deleteProgram($id)
     {
         $program = Program::find($id);
-        $fichas = $program->fichas;
 
-        $fichas->count();
-        if (!$fichas) {
-            return [
-                "error" => true,
-                "code" => 404,
-                "message" => "El programa tiene fichas relacionadas",
-            ];
-        }
-
-        if (!$program)
+        // Validar que exista
+        if (!$program) {
             return [
                 "error" => true,
                 "code" => 404,
                 "message" => "El programa no existe",
             ];
+        }
 
+        //  Verificar si tiene fichas relacionadas
+        if ($program->fichas()->count() > 0) {
+            return [
+                "error" => true,
+                "code" => 409,
+                "message" => "No se puede eliminar el programa porque tiene fichas asociadas",
+            ];
+        }
+
+        // Eliminar
         $program->delete();
 
         return [

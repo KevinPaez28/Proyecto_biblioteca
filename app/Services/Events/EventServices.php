@@ -230,13 +230,22 @@ class EventServices
 
     public function deleteEvents($id)
     {
-        $event = events::find($id);
+        $event = Events::find($id);
 
         if (!$event) {
             return [
                 "error" => true,
                 "code" => 404,
                 "message" => "El evento no existe",
+            ];
+        }
+
+        // 👇 validar relación
+        if ($event->assistances()->exists()) {
+            return [
+                "error" => true,
+                "code" => 409,
+                "message" => "No se puede eliminar el evento porque tiene asistencias registradas",
             ];
         }
 

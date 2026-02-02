@@ -2,6 +2,7 @@
 
 namespace App\Models\Events;
 
+use App\Models\assitances\assitances;
 use App\Models\Rooms\rooms;
 use App\Models\StatesRooms\States_rooms;
 use Illuminate\Database\Eloquent\Model;
@@ -25,5 +26,9 @@ class events extends Model
     public function room()
     {
         return $this->belongsTo(rooms::class, 'room_id');
+    }
+    public function assistances()
+    {
+        return $this->hasMany(assitances::class, 'event_id');
     }
 }

@@ -368,40 +368,40 @@ class UserService
     }
 
     public function changePassword($data, $id)
-{
-    $user = User::find($id);
+    {
+        $user = User::find($id);
 
-    if (!$user) {
+        if (!$user) {
+            return [
+                "error" => true,
+                "code" => 404,
+                "message" => "Usuario no encontrado"
+            ];
+        }
+
+        // Verificar contraseña actual
+        if (!Hash::check($data['current_password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['La contraseña actual es incorrecta']
+            ]);
+        }
+
+        // Guardar nueva contraseña
+        $user->password = Hash::make($data['new_password']);
+        $user->save();
+
         return [
-            "error" => true,
-            "code" => 404,
-            "message" => "Usuario no encontrado"
+            "error" => false,
+            "code" => 200,
+            "message" => "Contraseña actualizada correctamente"
         ];
     }
 
-    // Verificar contraseña actual
-    if (!Hash::check($data['current_password'], $user->password)) {
-        throw ValidationException::withMessages([
-            'current_password' => ['La contraseña actual es incorrecta']
-        ]);
-    }
 
-    // Guardar nueva contraseña
-    $user->password = Hash::make($data['new_password']);
-    $user->save();
-
-    return [
-        "error" => false,
-        "code" => 200,
-        "message" => "Contraseña actualizada correctamente"
-    ];
-}
-    
-    
     public function deleteUser($id)
     {
         $user = User::withCount('assistances')->find($id);
-    
+
         if (!$user) {
             return [
                 "error" => true,
@@ -409,7 +409,17 @@ class UserService
                 "message" => "El usuario no existe",
             ];
         }
-    
+
+        //  EVITA QUE SE ELIMINE A SÍ MISMO
+        if (auth()->id() === $user->id) {
+            return [
+                "error" => true,
+                "code" => 403,
+                "message" => "No puedes eliminar tu propio usuario",
+            ];
+        }
+
+        // NO BORRAR SI TIENE ASISTENCIAS
         if ($user->assistances_count > 0) {
             return [
                 "error" => true,
@@ -417,41 +427,39 @@ class UserService
                 "message" => "No se puede eliminar el usuario porque tiene asistencias registradas",
             ];
         }
-    
+
         try {
             DB::beginTransaction();
-    
-            // 🔹 BORRAR PERFIL (usa tu relación correcta)
+
+            // BORRAR PERFIL
             if ($user->perfil) {
                 $user->perfil->delete();
             }
-    
-            // 🔹 BORRAR RELACIÓN CON FICHAS (tabla pivote)
+
+            // TABLA PIVOTE FICHAS
             $user->fichas()->detach();
-    
-            // 🔹 BORRAR ROLES (spatie)
+
+            // ROLES (SPATIE)
             $user->roles()->detach();
-    
-            // 🔹 BORRAR USUARIO
+
+            // USUARIO
             $user->delete();
-    
+
             DB::commit();
-    
+
             return [
                 "error" => false,
                 "code" => 200,
                 "message" => "Usuario eliminado correctamente",
             ];
-    
         } catch (Exception $e) {
             DB::rollBack();
-    
+
             return [
                 "error" => true,
                 "code" => 500,
-                "message" => $e->getMessage(), // ← esto nos dice el error real
+                "message" => $e->getMessage(),
             ];
         }
     }
-    
 }
