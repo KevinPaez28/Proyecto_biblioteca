@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Schedules\SchedulesController;
 use App\Http\Controllers\Api\Shifts\ShiftsController;
 use App\Http\Controllers\Api\state_events\stateEventsController;
 use App\Http\Controllers\Api\states_rooms\StatesRoomsController;
+use App\Http\Controllers\Api\TypeDocument\TypeDocumentController;
 use App\Http\Controllers\Api\User\UserController;
 use App\Http\Controllers\Api\UserStatus\UserStatusController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +53,7 @@ Route::get('eventos/', [EventController::class, 'getAll']);
 Route::get('eventos/today', [EventController::class, 'gettoday']);
 Route::post('asistencia/create', [assitancesController::class, 'create']);
 Route::get('asistencia/export', [assitancesController::class, 'getexport']);   
+Route::get('Tipo_documento/', [TypedocumentController::class, 'getAll']);
 
 
 // ================= RUTAS PROTEGIDAS =================
@@ -73,6 +75,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/import', [UserController::class, 'import'])->middleware('permission:users.store');
         Route::patch('/{id}', [UserController::class, 'update'])->middleware('permission:users.update');
         Route::delete('/delete/{id}', [UserController::class, 'delete'])->middleware('permission:users.destroy');
+    });
+
+    Route::prefix('Tipo_documento')->group(function () {
+        Route::post('/create', [TypedocumentController::class, 'create'])->middleware('permission:document.store');
+        Route::patch('/{id}', [TypedocumentController::class, 'update'])->middleware('permission:document.update');
+        Route::delete('/delete/{id}', [TypedocumentController::class, 'delete'])->middleware('permission:document.destroy');
     });
 
     // --------- ROLES ----------

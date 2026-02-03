@@ -18,50 +18,57 @@ class RolePermissionSeeder extends Seeder
         $administrador = Role::findByName('Administrador');
         $instructor = Role::findByName('Instructor');
         $aprendiz = Role::findByName('Aprendiz');
-        $ayudante = Role::findByName('Ayudante');
+        $Apoyo = Role::findByName('Apoyo');
 
         $administrador->syncPermissions(Permission::all());
-        $ayudante->syncPermissions([
-
+        $Apoyo->syncPermissions([
             'auth.login',
-            'auth.reset-password',
-            'auth.reset-password.change',
-            'auth.validate-token',
-            'users.index',
-            'users.store',
-            'users.update',
+            // ESTADO USUARIOS
+            'user-status.index',
+            'user-status.store',
+            'user-status.update',
+            'user-status.destroy',
 
-            'roles.index',
-            'roles.store',
+            // ESTADOS EVENTOS
+            'events.index',       // para ver
+            'events.store',       // para crear
+            'events.update',      // para actualizar
+            'events.destroy',     // para eliminar
 
+            // ESTADOS SALAS
+            'rooms.index',        // para ver
+            'rooms.store',        // para crear
+            'rooms.update',       // para actualizar
+            'rooms.destroy',      // para eliminar
+
+            'history.index',
+            'history.store',
+            'history.update',
+            'history.destroy',
+
+            'document.index',
+            'document.store',
+            'document.update',
+            'document.destroy',
+
+            // PROGRAMAS
             'programs.index',
+            'programs.store',
+            'programs.update',
+            'programs.destroy',
 
-            'profiles.index',
-
+            // FICHAS
             'fichas.index',
+            'fichas.store',
+            'fichas.update',
+            'fichas.destroy',
 
-            'documents.index',
-
-            'shifts.index',
-            'shifts.store',
-            'shifts.update',
-
-            'reasons.index',
-            'reasons.store',
-            'reasons.update',
-
+            // EVENTOS
             'events.index',
-            'events.today',
+            'events.today',      // Ver eventos de hoy
             'events.store',
             'events.update',
-
-            'assistances.index',
-            'assistances.store',
-            'assistances.update',
-
-            'rooms.index',
-            'rooms.store',
-            'rooms.update',
+            'events.destroy',
         ]);
     }
 }

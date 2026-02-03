@@ -17,7 +17,7 @@ class RoleSeeder extends Seeder
         Role::create(['name' => 'Aprendiz']);
         Role::create(['name' => 'Instructor']);
         Role::create(['name' => 'Egresado']);
-        Role::create(['name' => 'Ayudante']);
+        Role::create(['name' => 'Apoyo']);
         Role::create(['name' => 'Visitante']);
     }
 }

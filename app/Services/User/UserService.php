@@ -48,7 +48,9 @@ class UserService
                 'document'  => $data['documento'],
                 'email'     => $data['correo'],
                 'password'  => bcrypt($data['contrasena']),
+                'document_type_id' => $data['tipo_documento'],
                 'status_id' => 1,
+
             ]);
 
             // Crea el perfil
@@ -81,8 +83,8 @@ class UserService
                 ]);
             }
 
-            // Solo para Admin o Ayudante: enviar correo
-            if ($rolModel->name === 'Administrador' || $rolModel->name === 'Ayudante') {
+            // Solo para Admin o Apoyo: enviar correo
+            if ($rolModel->name === 'Administrador' || $rolModel->name === 'Apoyo') {
                 try {
                     $user->sendEmailVerificationNotification();
                 } catch (Exception $e) {
@@ -152,7 +154,7 @@ class UserService
     // =================== MODIFICADO PARA PAGINACIÓN ===================
     public function getAllInformation(array $filters = [], $perPage = 10)
     {
-        $query = User::with(['perfil', 'roles', 'status'])
+        $query = User::with(['perfil', 'roles', 'status', 'documentType'])
             ->orderBy('id');
 
         if (!empty($filters['nombre'])) {
@@ -183,6 +185,12 @@ class UserService
             });
         }
 
+        if (!empty($filters['tipo_documento'])) {
+            $query->whereHas('documentType', function ($q) use ($filters) {
+                $q->where('acronym', $filters['tipo_documento']);
+            });
+        }
+
         $users = $query->paginate($perPage); // PAGINACIÓN
 
         return [
@@ -195,6 +203,8 @@ class UserService
                 "records" => $users->map(function ($user) {
                     return [
                         'id' => $user->id,
+                        'document_type_id' => $user->documentType->id ?? null,
+                        'document_type'    => $user->documentType->acronym ?? '',
                         'document' => $user->document,
                         'first_name' => $user->perfil->name ?? '',
                         'last_name' => $user->perfil->last_name ?? '',
@@ -204,6 +214,7 @@ class UserService
                         'estado' => $user->status->status ?? '',
                     ];
                 }),
+
                 "meta" => [
                     "current_page" => $users->currentPage(),
                     "last_page" => $users->lastPage(),
@@ -314,6 +325,7 @@ class UserService
                 'document'  => $data['documento'],
                 'email'     => $data['correo'],
                 'status_id' => $data['status_id'],
+                'document_type_id' => $data['tipo_documento'],
             ]);
 
             // ================= PERFIL =================

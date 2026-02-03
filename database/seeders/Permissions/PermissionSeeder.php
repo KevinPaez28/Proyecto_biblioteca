@@ -77,6 +77,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'schedules.update', 'description' => 'Actualizar horario'],
             ['name' => 'schedules.destroy', 'description' => 'Eliminar horario'],
 
+            
+
+            ['name' => 'document.index', 'description' => 'Ver tipo de documento'],
+            ['name' => 'document.store', 'description' => 'Crear Tipo de documento'],
+            ['name' => 'document.update', 'description' => 'Actualizar Tipo de documento'],
+            ['name' => 'document.destroy', 'description' => 'Eliminar Tipo de documento'],
+
             // ================= JORNADAS =================
             ['name' => 'shifts.index', 'description' => 'Ver jornadas'],
             ['name' => 'shifts.store', 'description' => 'Crear jornada'],

@@ -22,86 +22,99 @@ class assitanceServices
 {
     public function getAssistances(array $filters = [], int $page = 1, int $perPage = 10)
     {
-        $query = DB::table('assistances as a')
-            ->leftJoin('users as u', 'a.user_id', '=', 'u.id')
-            ->leftJoin('profiles as p', 'u.id', '=', 'p.usuario_id')
-            ->leftJoin('ficha_user as fu', 'p.usuario_id', '=', 'fu.usuario_id')
-            ->leftJoin('ficha as f', 'fu.ficha_id', '=', 'f.id')
-            ->leftJoin('reasons as r', 'a.reason_id', '=', 'r.id')
-            ->leftJoin('model_has_roles as mr', function ($join) {
-                $join->on('u.id', '=', 'mr.model_id')
-                    ->where('mr.model_type', 'App\\Models\\User\\User');
-            })
-            ->leftJoin('roles as ro', 'mr.role_id', '=', 'ro.id')
-            ->select(
-                DB::raw('COALESCE(f.ficha, "") as Ficha'),
-                DB::raw('COALESCE(u.document, "") as Documento'),
-                DB::raw('COALESCE(p.name, "") as FirstName'),
-                DB::raw('COALESCE(p.last_name, "") as LastName'),
-                DB::raw('DATE(a.created_at) as Date'),
-                DB::raw('TIME(a.created_at) as Time'),
-                'a.created_at as DateTime',
-                DB::raw('COALESCE(r.name, "") as Reason'),
-                DB::raw('COALESCE(ro.name, "") as Role'),
-                'a.id'
-            );
+        $query = assitances::with([
+            'user.perfil',
+            'user.fichas',
+            'reason',
+            'user.roles'
+        ]);
 
-        // 🔍 FILTROS (igual que ya tenías)
+        // 🔍 FILTROS
         if (!empty($filters['nombre'])) {
-            $query->where('p.name', 'like', '%' . $filters['nombre'] . '%');
+            $query->whereHas('user.perfil', function ($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['nombre'] . '%');
+            });
         }
 
         if (!empty($filters['apellido'])) {
-            $query->where('p.last_name', 'like', '%' . $filters['apellido'] . '%');
+            $query->whereHas('user.perfil', function ($q) use ($filters) {
+                $q->where('last_name', 'like', '%' . $filters['apellido'] . '%');
+            });
         }
 
         if (!empty($filters['documento'])) {
-            $query->where('u.document', 'like', '%' . $filters['documento'] . '%');
+            $query->whereHas('user', function ($q) use ($filters) {
+                $q->where('document', 'like', '%' . $filters['documento'] . '%');
+            });
         }
 
         if (!empty($filters['ficha'])) {
-            $query->where('f.ficha', 'like', '%' . $filters['ficha'] . '%');
+            $query->whereHas('user.fichas', function ($q) use ($filters) {
+                $q->where('ficha', 'like', '%' . $filters['ficha'] . '%');
+            });
         }
 
         if (!empty($filters['fecha'])) {
-            $query->whereDate('a.created_at', $filters['fecha']);
+            $query->whereDate('created_at', $filters['fecha']);
         }
 
         if (!empty($filters['motivo'])) {
-            $query->where('r.name', $filters['motivo']);
+            $query->whereHas('reason', function ($q) use ($filters) {
+                $q->where('name', $filters['motivo']);
+            });
         }
 
         if (!empty($filters['rol'])) {
-            $query->where('ro.name', $filters['rol']);
+            $query->whereHas('user.roles', function ($q) use ($filters) {
+                $q->where('name', $filters['rol']);
+            });
         }
 
-        // 🔥 PAGINACIÓN
+        // 📄 PAGINACIÓN
         $assistances = $query
-            ->orderBy('a.created_at', 'desc') // opcional, para que salgan de la más reciente
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $records = $assistances->items(); // recibe colección ya paginada
-        $meta = [
-            "current_page" => $assistances->currentPage(),
-            "last_page"    => $assistances->lastPage(),
-            "per_page"     => $assistances->perPage(),
-            "total"        => $assistances->total(),
-        ];
+        $records = $assistances->map(function ($a) {
+            $user   = $a->user;
+            $perfil = $user->perfil ?? null;
+            $ficha  = $user->fichas->first();
 
-        $isEmpty = count($records) === 0;
+            $fecha = $a->created_at->setTimezone('America/Bogota');
+
+            return [
+                "Ficha"     => $ficha->ficha ?? "",
+                "Documento" => $user->document ?? "",
+                "FirstName" => $perfil->name ?? "",
+                "LastName"  => $perfil->last_name ?? "",
+                "Date"      => $fecha->format('d/m/Y'),
+                "Time"      => $fecha->format('h:i:s A'), // ✅ 12 horas
+                "DateTime"  => $fecha->format('d/m/Y h:i:s A'),
+                "Reason"    => $a->reason->name ?? "",
+                "Role"      => $user->roles->pluck('name')->implode(', '),
+                "id"        => $a->id
+            ];
+        });
 
         return [
             "error"   => false,
             "code"    => 200,
-            "message" => $isEmpty
+            "message" => $records->isEmpty()
                 ? "No hay asistencias registradas"
                 : "Asistencias obtenidas con éxito",
             "data"    => [
                 "records" => $records,
-                "meta"    => $meta
+                "meta"    => [
+                    "current_page" => $assistances->currentPage(),
+                    "last_page"    => $assistances->lastPage(),
+                    "per_page"     => $assistances->perPage(),
+                    "total"        => $assistances->total(),
+                ]
             ]
         ];
     }
+
+
     public function getEventAttendances(array $filters = [])
     {
         $query = assitances::with([

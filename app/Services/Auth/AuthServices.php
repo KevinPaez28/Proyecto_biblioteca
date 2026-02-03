@@ -31,7 +31,7 @@ class AuthServices
             ];
         }
 
-        if (!$user->hasAnyRole(['Administrador', 'Ayudante'])) {
+        if (!$user->hasAnyRole(['Administrador', 'Apoyo'])) {
             return [
                 "error" => true,
                 "code" => 403,

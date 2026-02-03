@@ -5,6 +5,7 @@ namespace App\Services\ImportExcel;
 use App\Models\Ficha\Ficha;
 use App\Models\Ficha_users\ficha_user;
 use App\Models\Profiles\Profiles;
+use App\Models\TypeDocuments\TypeDocument;
 use App\Models\User\User;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Spatie\Permission\Models\Role;
@@ -18,10 +19,9 @@ class ImportExcelService
         try {
             $spreadsheet = IOFactory::load($file->getPathname());
             $sheet = $spreadsheet->getActiveSheet();
-
             $rows = $sheet->toArray(null, true, true, false);
 
-            // Encabezados reales
+            // ================= ENCABEZADOS =================
             $headers = array_map(function ($h) {
                 return strtolower(trim($h));
             }, $rows[0]);
@@ -30,7 +30,6 @@ class ImportExcelService
 
                 $rowData = $rows[$i];
 
-                // Si la fila está completamente vacía, saltar
                 if (!array_filter($rowData)) {
                     continue;
                 }
@@ -38,7 +37,8 @@ class ImportExcelService
                 $row = array_combine($headers, $rowData);
 
                 try {
-                    // ================= LIMPIAR FICHA =================
+
+                    // ================= FICHA =================
                     $fichaExcel = isset($row['ficha']) ? trim((string)$row['ficha']) : '';
 
                     if ($fichaExcel === '') {
@@ -49,18 +49,57 @@ class ImportExcelService
                         continue;
                     }
 
-                    // Quitar .0 si Excel la manda como número
                     if (is_numeric($fichaExcel)) {
                         $fichaExcel = (string)(int)$fichaExcel;
                     }
 
-                    // ================= BUSCAR FICHA =================
                     $ficha = Ficha::where('ficha', $fichaExcel)->first();
 
                     if (!$ficha) {
                         $errors[] = [
                             'documento' => $row['numero_documento'] ?? null,
                             'error'     => "La ficha {$fichaExcel} no existe",
+                        ];
+                        continue;
+                    }
+
+                    // ================= TIPO DOCUMENTO =================
+                    $tipoDocExcel = isset($row['tipo_documento']) ? strtoupper(trim($row['tipo_documento'])) : '';
+
+                    if ($tipoDocExcel === '') {
+                        $errors[] = [
+                            'documento' => $row['numero_documento'] ?? null,
+                            'error'     => 'No se proporcionó tipo de documento',
+                        ];
+                        continue;
+                    }
+
+                    // Mapeo Excel → acrónimo BD
+                    $mapaAcronimos = [
+                        'CC'        => 'CC',
+                        'TI'        => 'TI',
+                        'CE'        => 'CE',
+                        'PPT'       => 'PPT',
+                        'PASAPORTE' => 'PA',
+                        'PAS'       => 'PA',
+                    ];
+
+                    if (!isset($mapaAcronimos[$tipoDocExcel])) {
+                        $errors[] = [
+                            'documento' => $row['numero_documento'] ?? null,
+                            'error'     => "Tipo de documento '{$tipoDocExcel}' no reconocido",
+                        ];
+                        continue;
+                    }
+
+                    $acronimoFinal = $mapaAcronimos[$tipoDocExcel];
+
+                    $documentType = TypeDocument::where('acronym', $acronimoFinal)->first();
+
+                    if (!$documentType) {
+                        $errors[] = [
+                            'documento' => $row['numero_documento'] ?? null,
+                            'error'     => "El tipo con acrónimo '{$acronimoFinal}' no existe en BD",
                         ];
                         continue;
                     }
@@ -76,10 +115,11 @@ class ImportExcelService
 
                     // ================= CREAR USUARIO =================
                     $user = User::create([
-                        'document'  => trim((string)$row['numero_documento']),
-                        'email'     => trim((string)$row['correo_electronico']),
-                        'password'  => bcrypt('12345678'),
-                        'status_id' => 1,
+                        'document'         => trim((string)$row['numero_documento']),
+                        'email'            => trim((string)$row['correo_electronico']),
+                        'password'         => bcrypt('12345678'),
+                        'status_id'        => 1,
+                        'document_type_id' => $documentType->id,
                     ]);
 
                     // ================= PERFIL =================

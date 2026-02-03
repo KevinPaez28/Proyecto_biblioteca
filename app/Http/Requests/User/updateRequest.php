@@ -27,6 +27,7 @@ class updateRequest extends FormRequest
             // USUARIO
             'documento' => "required|string|max:10|unique:users,document,{$userId}",
             'correo'    => 'required|email|max:255',
+            'tipo_documento' => 'required|integer|exists:document_types,id', 
             'status_id' => 'required|integer|exists:user_statuses,id',
             'rol_id'    => 'required|integer|exists:roles,id',
             'ficha_id'     => 'integer|exists:ficha,id',
@@ -46,6 +47,8 @@ class updateRequest extends FormRequest
             'documento.required' => 'El documento es obligatorio.',
             'documento.unique'   => 'Este documento ya se encuentra registrado.',
             'documento.max'      => 'El documento no puede tener más de 10 caracteres.',
+            'tipo_documento' => 'El tipo de documento es obligatorio.',
+            'tipo_documento.exists'   => 'El tipo de documento seleccionado no es válido.',
 
             'correo.required'    => 'El correo es obligatorio.',
             'correo.email'       => 'El correo no tiene un formato válido.',

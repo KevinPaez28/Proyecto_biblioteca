@@ -7,6 +7,7 @@ namespace App\Models\User;
 use App\Models\assitances\assitances;
 use App\Models\Ficha\Ficha;
 use App\Models\Profiles\Profiles;
+use App\Models\TypeDocuments\TypeDocument;
 use App\Models\UserstatusServices\user_statuses;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -31,6 +32,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'status_id',
+        'document_type_id',
     ];
 
     /**
@@ -54,6 +56,11 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function tipoDocumento()
+    {
+        return $this->belongsTo(TypeDocument::class, 'document_type_id');
+    }
+
     public function perfil()
     {
         return $this->hasOne(Profiles::class, 'usuario_id');
@@ -68,6 +75,11 @@ class User extends Authenticatable implements MustVerifyEmail
     }
     public function fichas()
     {
-        return $this->belongsToMany(Ficha::class,'ficha_user','usuario_id','ficha_id');
+        return $this->belongsToMany(Ficha::class, 'ficha_user', 'usuario_id', 'ficha_id');
+    }
+
+    public function documentType()
+    {
+        return $this->belongsTo(TypeDocument::class, 'document_type_id');
     }
 }

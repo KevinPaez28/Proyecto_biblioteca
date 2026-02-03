@@ -28,6 +28,7 @@ class assitancesController extends Controller
             'documento',
             'ficha',
             'fecha',
+            'document_type_id',
             'motivo',
             'rol'
         ]);

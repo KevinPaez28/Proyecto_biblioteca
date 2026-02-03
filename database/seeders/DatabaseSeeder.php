@@ -11,6 +11,7 @@ use Database\Seeders\Status_events\events_status;
 use Database\Seeders\Status_reason\reason_status;
 use Database\Seeders\Status_rooms\events_rooms;
 use Database\Seeders\Status_user\status_user;
+use Database\Seeders\TypeDocument\typedocumentseeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -33,6 +34,7 @@ class DatabaseSeeder extends Seeder
             events_rooms::class,
             status_user::class,
             ActionsSeeder::class,
+            typedocumentseeders::class,
         ]);
 
     }

@@ -55,7 +55,8 @@ class UserController extends Controller
             'apellido',
             'documento',
             'rol',
-            'estado'
+            'estado',
+            'document_type_id'
         ]);
 
         $response = $this->userService->getAllInformation($filters);
@@ -82,6 +83,7 @@ class UserController extends Controller
         'rol',
         'estados',
         'ficha',
+        'document_type_id',
         'programa'
     ]);
 

@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('document')->unique();
             $table->string('password');
             $table->string('email');
+            $table->unsignedBigInteger('document_type_id');
+            $table->foreign('document_type_id')->references('id')->on('document_types');
             $table->timestamp('email_verified_at')->nullable();
             $table->foreignId('status_id')->constrained('user_statuses');
             $table->rememberToken();

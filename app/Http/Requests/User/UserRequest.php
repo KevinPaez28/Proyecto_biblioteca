@@ -25,7 +25,7 @@ class UserRequest extends FormRequest
             'documento' => 'required|string|min:8|max:10|unique:users,document',
             'contrasena' => 'nullable|string|min:8', 
             'estados_id' => 'exists:user_statuses,id',
-
+            'tipo_documento' => 'required|integer|exists:document_types,id', 
             'nombres'   => 'required|string|max:15',
             'apellidos' => 'required|string|max:15',
             'rol'  => 'required|exists:roles,id',
@@ -54,6 +54,8 @@ class UserRequest extends FormRequest
             'estados_id.exists'  => 'El estado seleccionado no existe.',
 
             // Nombres y apellidos
+            'tipo_documento.required' => 'El tipo de documento es obligatorio.',
+            'tipo_documento.exists'   => 'El tipo de documento seleccionado no es válido.',
             'nombres.required'   => 'Los nombres son obligatorios.',
             'nombres.string'     => 'Los nombres deben ser un texto.',
             'nombres.max'        => 'Los nombres no pueden superar los 15 caracteres.',
