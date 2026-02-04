@@ -23,7 +23,6 @@ class RolePermissionSeeder extends Seeder
         $administrador->syncPermissions(Permission::all());
         $Apoyo->syncPermissions([
             'auth.login',
-            // ESTADO USUARIOS
             'user-status.index',
             'user-status.store',
             'user-status.update',

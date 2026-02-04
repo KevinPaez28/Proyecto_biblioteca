@@ -70,7 +70,6 @@ class assitanceServices
             });
         }
 
-        // 📄 PAGINACIÓN
         $assistances = $query
             ->orderBy('created_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
@@ -88,7 +87,7 @@ class assitanceServices
                 "FirstName" => $perfil->name ?? "",
                 "LastName"  => $perfil->last_name ?? "",
                 "Date"      => $fecha->format('d/m/Y'),
-                "Time"      => $fecha->format('h:i:s A'), // ✅ 12 horas
+                "Time"      => $fecha->format('h:i:s A'),
                 "DateTime"  => $fecha->format('d/m/Y h:i:s A'),
                 "Reason"    => $a->reason->name ?? "",
                 "Role"      => $user->roles->pluck('name')->implode(', '),
@@ -113,7 +112,6 @@ class assitanceServices
             ]
         ];
     }
-
 
     public function getEventAttendances(array $filters = [])
     {
@@ -167,20 +165,26 @@ class assitanceServices
 
         // ================= OBTENER DATOS =================
         $data = $query->get()
-            ->groupBy(fn($a) => optional($a->user->fichas->first())->id) // Agrupa por ficha
+            // 🔴 CAMBIO: Agrupa por ficha + evento para que 'mandated' sea consistente
+            ->groupBy(function ($a) {
+                return optional($a->user->fichas->first())->id . '_' . $a->event_id;
+            })
             ->map(function ($group) {
-                $a = $group->first(); // Tomamos solo la primera asistencia de cada ficha
+                $a = $group->first();
+                $evento = $a->event;
+
                 return [
-                    'Ficha'     => optional($a->user->fichas->first())->ficha ?? '',
-                    'Documento' => $a->user->document ?? '',
-                    'FirstName' => $a->user->perfil->name ?? '',
-                    'LastName'  => $a->user->perfil->last_name ?? '',
-                    'DateTime'  => $a->created_at,
-                    'Event'     => $a->event->name ?? '',
-                    'Role'      => optional($a->user->roles->first())->name ?? ''
+                    'Ficha'      => optional($a->user->fichas->first())->ficha ?? '',
+                    'Documento'  => $a->user->document ?? '',
+                    'FirstName'  => $a->user->perfil->name ?? '',
+                    'LastName'   => $a->user->perfil->last_name ?? '',
+                    'DateTime'   => $a->created_at,
+                    'Event'      => $evento->name ?? '',
+                    'Encargado'  => $evento->mandated ?? '', // ← Ahora sale directo de events.mandated
+                    'Role'       => optional($a->user->roles->first())->name ?? ''
                 ];
             })
-            ->values(); // Reindexa la colección
+            ->values();
 
         return [
             "error"   => false,
@@ -194,7 +198,6 @@ class assitanceServices
     }
 
 
-
     public function exportAssistances(array $filters = [])
     {
         try {
@@ -204,6 +207,7 @@ class assitanceServices
                 'user.perfil',
                 'user.fichas',
                 'user.roles',
+                'user.documentType',
                 'event'
             ])->whereNotNull('event_id');
 
@@ -216,7 +220,6 @@ class assitanceServices
 
             $asistencias = $query->get();
 
-            // 🔑 VALIDACIÓN: Si no hay asistencias
             if ($asistencias->isEmpty()) {
                 return [
                     'error' => true,
@@ -228,28 +231,52 @@ class assitanceServices
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
 
-            // Encabezados
-            $sheet->setCellValue('A1', 'Ficha');
+            // 🔹 ENCABEZADOS (NO SE TOCAN)
+            $sheet->setCellValue('A1', 'Tipo Doc');
             $sheet->setCellValue('B1', 'Documento');
             $sheet->setCellValue('C1', 'Nombre');
             $sheet->setCellValue('D1', 'Apellido');
             $sheet->setCellValue('E1', 'Fecha');
             $sheet->setCellValue('F1', 'Evento');
-            $sheet->setCellValue('G1', 'Rol');
-            $sheet->getStyle('A1:G1')->getFont()->setBold(true);
+            $sheet->setCellValue('G1', 'Encargado');
+            $sheet->setCellValue('H1', 'Ficha');
+            $sheet->setCellValue('I1', 'Rol');
+            $sheet->getStyle('A1:I1')->getFont()->setBold(true);
 
+            // 🔹 DATOS (ALINEADOS CON ENCABEZADOS)
             $fila = 2;
             foreach ($asistencias as $a) {
-                $sheet->setCellValue('A' . $fila, optional($a->user->fichas->first())->ficha ?? '');
+
+                // A → Tipo Doc
+                $sheet->setCellValue('A' . $fila, $a->user->documentType->acronym ?? '');
+
+                // B → Documento
                 $sheet->setCellValue('B' . $fila, $a->user->document ?? '');
+
+                // C → Ficha
+
+                // D → Nombre
                 $sheet->setCellValue('C' . $fila, $a->user->perfil->name ?? '');
+
+                // E → Apellido
                 $sheet->setCellValue('D' . $fila, $a->user->perfil->last_name ?? '');
 
+                // F → Fecha
                 $sheet->setCellValue('E' . $fila, $a->created_at);
-                $sheet->getStyle('E' . $fila)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_DATETIME);
+                $sheet->getStyle('E' . $fila)
+                    ->getNumberFormat()
+                    ->setFormatCode(NumberFormat::FORMAT_DATE_DATETIME);
 
+                // G → Evento
                 $sheet->setCellValue('F' . $fila, $a->event->name ?? '');
-                $sheet->setCellValue('G' . $fila, optional($a->user->roles->first())->name ?? '');
+
+                // H → Encargado
+                $sheet->setCellValue('G' . $fila, $a->event->mandated ?? '');
+
+                $sheet->setCellValue('H' . $fila, optional($a->user->fichas->first())->ficha ?? '');
+                // I → Rol
+                $sheet->setCellValue('I' . $fila, optional($a->user->roles->first())->name ?? '');
+
                 $fila++;
             }
 
@@ -281,6 +308,106 @@ class assitanceServices
             ];
         }
     }
+
+
+    public function exportAssistancesByReason(array $filters = [])
+    {
+        try {
+            ob_end_clean();
+
+            $query = assitances::with([
+                'user.perfil',
+                'user.fichas',
+                'user.roles',
+                'user.documentType',
+                'reason'
+            ])
+                ->whereNotNull('reason_id')   // Tiene motivo
+                ->whereNull('event_id');      // 🔥 NO es evento
+
+            if (!empty($filters['fecha_inicio']) && !empty($filters['fecha_fin'])) {
+                $query->whereBetween('created_at', [
+                    $filters['fecha_inicio'],
+                    $filters['fecha_fin'] . ' 23:59:59'
+                ]);
+            }
+
+            $asistencias = $query->get();
+
+            if ($asistencias->isEmpty()) {
+                return [
+                    'error' => true,
+                    'code' => 404,
+                    'message' => 'No se encontraron ingresos por motivo en el rango de fechas'
+                ];
+            }
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // 🔹 ENCABEZADOS
+            $sheet->setCellValue('A1', 'Tipo Doc');
+            $sheet->setCellValue('B1', 'Documento');
+            $sheet->setCellValue('C1', 'Nombre');
+            $sheet->setCellValue('D1', 'Apellido');
+            $sheet->setCellValue('E1', 'Fecha');
+            $sheet->setCellValue('F1', 'Motivo de Ingreso'); // 🔥 SOLO EL NOMBRE
+            $sheet->setCellValue('G1', 'Ficha');
+            $sheet->setCellValue('H1', 'Rol');
+            $sheet->getStyle('A1:H1')->getFont()->setBold(true);
+
+            $fila = 2;
+
+            foreach ($asistencias as $a) {
+
+                $sheet->setCellValue('A' . $fila, $a->user->documentType->acronym ?? '');
+                $sheet->setCellValue('B' . $fila, $a->user->document ?? '');
+                $sheet->setCellValue('C' . $fila, $a->user->perfil->name ?? '');
+                $sheet->setCellValue('D' . $fila, $a->user->perfil->last_name ?? '');
+
+                $sheet->setCellValue('E' . $fila, $a->created_at);
+                $sheet->getStyle('E' . $fila)
+                    ->getNumberFormat()
+                    ->setFormatCode(NumberFormat::FORMAT_DATE_DATETIME);
+
+                // 🔥 Motivo (sin descripción)
+                $sheet->setCellValue('F' . $fila, $a->reason->name ?? '');
+
+                $sheet->setCellValue('G' . $fila, optional($a->user->fichas->first())->ficha ?? '');
+                $sheet->setCellValue('H' . $fila, optional($a->user->roles->first())->name ?? '');
+
+                $fila++;
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $fileName = 'Ingresos_por_motivo_' . date('Y-m-d') . '.xlsx';
+
+            $responseExcel = new StreamedResponse(function () use ($writer) {
+                $writer->save('php://output');
+            });
+
+            $responseExcel->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            $responseExcel->headers->set('Content-Disposition', 'attachment; filename*=UTF-8\'\'' . $fileName);
+            $responseExcel->headers->set('Content-Transfer-Encoding', 'binary');
+            $responseExcel->headers->set('Pragma', 'public');
+            $responseExcel->headers->set('Cache-Control', 'max-age=0, no-cache, no-store, must-revalidate');
+            $responseExcel->headers->set('Expires', '0');
+
+            return [
+                'error' => false,
+                'code' => 200,
+                'message' => 'Excel generado correctamente (solo motivos, sin eventos)',
+                'data' => $responseExcel
+            ];
+        } catch (Exception $e) {
+            return [
+                'error' => true,
+                'code' => 500,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
 
 
     public function getTotalByDay()
@@ -345,8 +472,6 @@ class assitanceServices
             ]
         ];
     }
-
-
     public function getAssistancesByMonth()
     {
         \Carbon\Carbon::setLocale('es'); // Asegurarse que los meses estén en español
@@ -378,7 +503,6 @@ class assitanceServices
             ]
         ];
     }
-
     public function getAssistancesByEvent()
     {
         $data = DB::table('assistances')
@@ -397,7 +521,6 @@ class assitanceServices
             "data" => $data
         ];
     }
-
     public function createByEventAndFicha(array $data): array
     {
         // ================= VALIDACIÓN BÁSICA =================
@@ -498,9 +621,6 @@ class assitanceServices
             ]
         ];
     }
-
-
-
     public function CreateAssistances(array $data)
     {
         // 1. Validar usuario
@@ -568,8 +688,6 @@ class assitanceServices
             'data'    => $asistencia,
         ];
     }
-
-
     public function updateAssistances(array $data, $id)
     {
         try {
@@ -610,7 +728,6 @@ class assitanceServices
             ];
         }
     }
-
     public function deleteAprendices($id)
     {
         $rooms = assitances::find($id);

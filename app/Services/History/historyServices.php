@@ -8,31 +8,22 @@ use Illuminate\Support\Facades\DB;
 
 class historyServices
 {
-    public function getHistory()
+    public function getHistory($perPage = 10)
     {
         $history = History::with([
             'action',
             'user.perfil'
-        ])->get();
-    
-        if ($history->isEmpty()) {
-            return [
-                "error" => false,
-                "code" => 200,
-                "message" => "No hay historial registrado",
-                "data" => $history
-            ];
-        }
-    
+        ])->orderBy('id', 'desc')->paginate($perPage);
+
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Historiales obtenidos con éxito",
+            "message" => $history->isEmpty()
+                ? "No hay historial registrado"
+                : "Historiales obtenidos con éxito",
             "data" => $history
         ];
     }
-    
-
 
     public function CreateHistory(array $data)
     {

@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Database\Seeders\Actions\ActionsSeeder;
 use Database\Seeders\Permissions\PermissionSeeder;
+use Database\Seeders\programs\programSeeders;
+use Database\Seeders\Reasons\reasonsSeeders;
 use Database\Seeders\Role\RoleSeeder;
 use Database\Seeders\RolePermission\RolePermissionSeeder;
 use Database\Seeders\shifts\shiftSeeder;
@@ -35,6 +37,8 @@ class DatabaseSeeder extends Seeder
             status_user::class,
             ActionsSeeder::class,
             typedocumentseeders::class,
+            programSeeders::class,
+            reasonsSeeders::class
         ]);
 
     }

@@ -52,6 +52,21 @@ class assitancesController extends Controller
             $response['data'] ?? []
         );
     }
+    public function getexportreason(Request $request)
+    {
+        $filters = $request->only([
+            'fecha_inicio',
+            'fecha_fin',
+        ]);
+
+        $response = $this->assitancesServices->exportAssistancesByReason($filters);
+
+        if ($response['error']) {
+            return ResponseFormatter::error($response['message'], $response['code']);
+        }
+
+        return $response['data'];
+    }
     public function getexport(Request $request)
     {
         $filters = $request->only([

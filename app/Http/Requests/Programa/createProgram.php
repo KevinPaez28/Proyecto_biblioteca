@@ -22,7 +22,7 @@ class createProgram extends FormRequest
     public function rules(): array
     {
         return [
-            'programa_formacion' => 'unique:programs,training_program|required|string|max:50'
+            'programa_formacion' => 'unique:programs,training_program|required|string|max:100'
         ];
     }
 

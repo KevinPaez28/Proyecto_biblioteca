@@ -203,6 +203,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // --------- ASISTENCIAS ----------
     Route::prefix('asistencia')->group(function () {
         Route::get('/', [assitancesController::class, 'getAll'])->middleware('permission:assistances.index');
+        Route::get('export/reason', [assitancesController::class, 'getexportreason'])->middleware('permission:assistances.index');
         Route::get('/events', [assitancesController::class, 'getEvents'])->middleware('permission:assistances.index');
         Route::post('/events/create', [assitancesController::class, 'createEventAssistance'])->middleware('permission:assistances.store');
         Route::patch('/{id}', [assitancesController::class, 'update'])->middleware('permission:assistances.update');

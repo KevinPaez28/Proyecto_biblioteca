@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class HistoryController extends Controller
 {
-     protected $HistoryServices;
+    protected $HistoryServices;
 
 
     public function __construct(historyServices $historyServices)
@@ -23,12 +23,17 @@ class HistoryController extends Controller
     {
         $response = $this->HistoryServices->getHistory();
 
-
-        if ($response['error'])
+        if ($response['error']) {
             return ResponseFormatter::error($response['message'], $response['code']);
+        }
 
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
     }
+
     public function create(createHistory $request)
     {
         $data = $request->validated();
