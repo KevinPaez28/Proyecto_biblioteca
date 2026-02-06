@@ -32,7 +32,7 @@ class SchedulesServices
     public function getJornadasAndHorarios($search = null)
     {
         $schedules = Schedules::all();
-    
+
         if ($schedules->isEmpty()) {
             return [
                 "error" => false,
@@ -41,17 +41,17 @@ class SchedulesServices
                 "data" => []
             ];
         }
-    
+
         $data = [];
         $searchLower = $search ? strtolower($search) : null;
-    
+
         foreach ($schedules as $schedule) {
-    
+
             // Buscar si existe una jornada asociada a este horario
             $shift = Shifts::where('schedules_id', $schedule->id)->first();
-    
+
             $jornadaNombre = $shift ? $shift->name : "Sin jornada";
-    
+
             // 🔍 FILTRO BACKEND
             if ($searchLower) {
                 if (
@@ -61,7 +61,7 @@ class SchedulesServices
                     continue;
                 }
             }
-    
+
             $data[] = [
                 'id'         => $schedule->id,
                 'jornada'    => $jornadaNombre,
@@ -70,7 +70,7 @@ class SchedulesServices
                 'end_time'   => date("g:i A", strtotime($schedule->end_time)),
             ];
         }
-    
+
         return [
             "error" => false,
             "code" => 200,
@@ -78,7 +78,7 @@ class SchedulesServices
             "data" => $data
         ];
     }
-    
+
 
 
     public function CreateSchedules(array $data)
@@ -139,17 +139,28 @@ class SchedulesServices
 
     public function deleteSchedules($id)
     {
-        $schedules = Schedules::find($id);
+        $schedule = Schedules::withCount('shifts')->find($id);
 
-
-        if (!$schedules)
+        // 🔎 1. Validar existencia
+        if (!$schedule) {
             return [
                 "error" => true,
                 "code" => 404,
                 "message" => "El horario no existe",
             ];
+        }
 
-        $schedules->delete();
+        // 🚫 2. Validar si tiene jornadas asociadas
+        if ($schedule->shifts_count > 0) {
+            return [
+                "error" => true,
+                "code" => 409,
+                "message" => "No se puede eliminar el horario porque tiene jornadas asociadas",
+            ];
+        }
+
+        // 🗑 3. Eliminar si está libre
+        $schedule->delete();
 
         return [
             "error" => false,
