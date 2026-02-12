@@ -11,6 +11,8 @@ use App\Http\Requests\User\UserRequest;
 use App\Services\ImportExcel\ImportExcelService;
 use App\Services\User\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+
 
 class UserController extends Controller
 {
@@ -37,15 +39,15 @@ class UserController extends Controller
     }
 
     public function profiles(string $id)
-{
-    $response = $this->userService->getUserById($id);
+    {
+        $response = $this->userService->getUserById($id);
 
-    if ($response['error']) {
-        return ResponseFormatter::error($response['message'], $response['code']);
+        if ($response['error']) {
+            return ResponseFormatter::error($response['message'], $response['code']);
+        }
+
+        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-
-    return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
-}
 
 
     public function getByinformation(Request $request)
@@ -75,47 +77,78 @@ class UserController extends Controller
         );
     }
     public function apprentice(Request $request)
-{
-    $filters = $request->only([
-        'nombre',
-        'apellido',
-        'documento',
-        'rol',
-        'estados',
-        'ficha',
-        'document_type_id',
-        'programa'
-    ]);
+    {
+        $filters = $request->only([
+            'nombre',
+            'apellido',
+            'documento',
+            'rol',
+            'estados',
+            'ficha',
+            'document_type_id',
+            'programa'
+        ]);
 
-    $response = $this->userService->getAllApprentices($filters);
+        $response = $this->userService->getAllApprentices($filters);
 
-    if ($response['error']) {
-        return ResponseFormatter::error(
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
+
+        return ResponseFormatter::success(
             $response['message'],
-            $response['code']
+            $response['code'],
+            $response['data'] ?? [],
         );
     }
-
-    return ResponseFormatter::success(
-        $response['message'],
-        $response['code'],
-        $response['data'] ?? [],
-    );
-}
 
 
     public function create(UserRequest $request)
     {
-
         $data = $request->validated();
 
+        // ================= VALIDAR RECAPTCHA =================
+        $recaptcha = Http::asForm()->post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            [
+                'secret'   => env('RECAPTCHA_SECRET_KEY'),
+                'response' => $request->recaptcha_token,
+                'remoteip' => $request->ip(),
+            ]
+        )->json();
+
+        if (
+            empty($recaptcha['success']) ||
+            $recaptcha['success'] !== true ||
+            ($recaptcha['score'] ?? 0) < 0.5 ||
+            ($recaptcha['action'] ?? '') !== 'registro_usuario'
+        ) {
+            return ResponseFormatter::error(
+                'Verificación de seguridad fallida (reCAPTCHA)',
+                403
+            );
+        }
+
+        // ================= CONTINUAR REGISTRO =================
         $response = $this->userService->CreateUser($data);
 
-        if ($response['error'])
-            return ResponseFormatter::error($response['message'], $response['code']);
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
 
-        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
     }
+
     public function update(updateRequest $request, string $id)
     {
         $data = $request->validated();

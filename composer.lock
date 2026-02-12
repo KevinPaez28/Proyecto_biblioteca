@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d0d3674b6d4f034318b8a361b849c91b",
+    "content-hash": "ccd6ceee09d04e550c692f86a1d9ab3b",
     "packages": [
         {
             "name": "brick/math",
@@ -213,6 +213,109 @@
                 }
             ],
             "time": "2024-11-12T16:29:46+00:00"
+        },
+        {
+            "name": "dazza-dev/captcha-solver",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dazza-dev/captcha-solver.git",
+                "reference": "6443871f2db8356735aac111f643137068ba17cd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dazza-dev/captcha-solver/zipball/6443871f2db8356735aac111f643137068ba17cd",
+                "reference": "6443871f2db8356735aac111f643137068ba17cd",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DazzaDev\\CaptchaSolver\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Andres Daza",
+                    "email": "adaza90@outlook.com"
+                }
+            ],
+            "description": "Implementation of anti-captcha.com, capmonster.cloud and capsolver.com",
+            "keywords": [
+                "Capmonster",
+                "anti-captcha",
+                "capsolver",
+                "php",
+                "recaptcha"
+            ],
+            "support": {
+                "issues": "https://github.com/dazza-dev/captcha-solver/issues",
+                "source": "https://github.com/dazza-dev/captcha-solver/tree/v1.0.0"
+            },
+            "time": "2025-11-29T22:12:15+00:00"
+        },
+        {
+            "name": "dazza-dev/laravel-captcha-solver",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dazza-dev/laravel-captcha-solver.git",
+                "reference": "667a7cffda745682ff88a4b5c98a66e605c86e20"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dazza-dev/laravel-captcha-solver/zipball/667a7cffda745682ff88a4b5c98a66e605c86e20",
+                "reference": "667a7cffda745682ff88a4b5c98a66e605c86e20",
+                "shasum": ""
+            },
+            "require": {
+                "dazza-dev/captcha-solver": "^1.0",
+                "php": ">=8.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "DazzaDev\\LaravelCaptchaSolver\\CaptchaSolverServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "DazzaDev\\LaravelCaptchaSolver\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Andres Daza",
+                    "email": "adaza90@outlook.com"
+                }
+            ],
+            "description": "Laravel implementation of anti-captcha.com, capsolver.com and capmonster.cloud",
+            "keywords": [
+                "Capmonster",
+                "anticaptcha",
+                "capsolver",
+                "laravel",
+                "php",
+                "recaptcha"
+            ],
+            "support": {
+                "issues": "https://github.com/dazza-dev/laravel-captcha-solver/issues",
+                "source": "https://github.com/dazza-dev/laravel-captcha-solver/tree/v1.0.0"
+            },
+            "time": "2025-11-29T22:32:38+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
