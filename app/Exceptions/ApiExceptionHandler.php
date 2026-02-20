@@ -6,6 +6,7 @@ use App\Helpers\ResponseFormatter;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -35,6 +36,10 @@ class ApiExceptionHandler
                 ->all();
 
             return ResponseFormatter::error('Datos inválidos', 422, $flattenedErrors);
+        }
+
+        if($e instanceof ThrottleRequestsException) {
+            return ResponseFormatter::error('Demasiadas solicitudes. Por favor, inténtelo de nuevo más tarde.', 429);
         }
 
         if ($e instanceof HttpException) {
