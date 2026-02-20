@@ -6,12 +6,21 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class ForceJsonRequestHeader
+ * @package App\Http\Middlewares
+ *
+ * Middleware para forzar que la petición tenga el header 'Accept' con valor 'application/json'.
+ */
 class ForceJsonRequestHeader
 {
     /**
-     * Handle an incoming request.
+     * Maneja una petición entrante.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param Request $request
+     * @param Closure $next
+     * @return Response
+     *
      */
     public function handle(Request $request, Closure $next): Response
     {

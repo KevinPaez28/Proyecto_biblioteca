@@ -12,8 +12,14 @@ use App\Services\ImportExcel\ImportExcelService;
 use App\Services\User\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-
-
+/**
+ * Class UserController
+ * @package App\Http\Controllers\Api\User
+ *
+ * Controlador para la gestión de usuarios.
+ *  * Este controlador permite gestionar los usuarios, aprendices, importar usuarios,
+ *  * actualizar información, cambiar contraseñas, eliminar usuarios, entre otras funciones.
+ */
 class UserController extends Controller
 {
     protected $userService;
@@ -21,12 +27,21 @@ class UserController extends Controller
     protected $importService;
 
     public function __construct(UserService $userservice, ImportExcelService $importService)
+    /**
+     * UserController constructor.
+     * @param UserService $userservice
+     * @param ImportExcelService $importService
+     */
     {
 
         $this->importService = $importService;
         $this->userService = $userservice;
     }
 
+    /**
+     * Obtiene todos los usuarios.
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getAll()
     {
         $response = $this->userService->getUser();
@@ -38,6 +53,11 @@ class UserController extends Controller
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
+    /**
+     * Obtiene el perfil de un usuario por su ID.
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function profiles(string $id)
     {
         $response = $this->userService->getUserById($id);
@@ -49,7 +69,11 @@ class UserController extends Controller
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
-
+    /**
+     * Obtiene usuarios filtrados por información específica.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getByinformation(Request $request)
     {
         $filters = $request->only([
@@ -76,6 +100,11 @@ class UserController extends Controller
             $response['data'] ?? []
         );
     }
+    /**
+     * Obtiene todos los aprendices con filtros.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function apprentice(Request $request)
     {
         $filters = $request->only([
@@ -105,7 +134,11 @@ class UserController extends Controller
         );
     }
 
-
+    /**
+     * Crea un nuevo usuario.
+     * @param UserRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function create(UserRequest $request)
     {
         $data = $request->validated();
@@ -149,6 +182,11 @@ class UserController extends Controller
         );
     }
 
+    /**
+     * Actualiza un usuario existente.
+     * @param updateRequest $request
+     * @param string $id
+     */
     public function update(updateRequest $request, string $id)
     {
         $data = $request->validated();
@@ -160,6 +198,11 @@ class UserController extends Controller
 
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
+    /**
+     * Cambia la contraseña de un usuario.
+     * @param ChangePasswordRequest $request
+     * @param string $id
+     */
     public function newpassword(ChangePasswordRequest $request, string $id)
     {
         $data = $request->validated();
@@ -172,6 +215,11 @@ class UserController extends Controller
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
+    /**
+     * Elimina un usuario existente.
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function delete(string $id)
     {
         $response = $this->userService->deleteUser($id);
@@ -182,7 +230,11 @@ class UserController extends Controller
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
-
+    /**
+     * Importa aprendices desde un archivo Excel.
+     * @param ImportApprenticeRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function import(ImportApprenticeRequest $request)
     {
         $file = $request->file('file');
