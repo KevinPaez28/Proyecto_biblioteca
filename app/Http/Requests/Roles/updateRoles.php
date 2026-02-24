@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class updateRoles extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,8 +15,7 @@ class updateRoles extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
+     * Define las reglas de validación para la solicitud.
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
@@ -26,15 +25,17 @@ class updateRoles extends FormRequest
         return [
             'usuario_id' => 'required|integer|exists:users,id',
             'nombre' => "required|string|max:50|unique:roles,name,{$roleId}",
-            'permiso' => 'string|max:50'
+            'permiso' => 'nullable|string|max:50'
         ];
     }
 
     /**
-     * Mensajes personalizados para errores de validación.
+     * Define los mensajes de error personalizados para las reglas de validación.
+     * @return array<string, string>
      */
     public function messages(): array
     {
+        // Mensajes de error personalizados
         return [
             'usuario_id.required' => 'El campo usuario es obligatorio.',
             'usuario_id.integer' => 'El ID de usuario debe ser un número entero.',
@@ -45,9 +46,8 @@ class updateRoles extends FormRequest
             'nombre.max' => 'El nombre no puede superar los 50 caracteres.',
             'nombre.unique' => 'Ya existe un rol con ese nombre.',
 
-            'permiso.required' => 'El guard permiso es obligatorio.',
             'permiso.string' => 'El guard permiso debe ser texto.',
-            'permiso.max' => 'El guard permiso no puede superar los 50 caracteres.',
+            'permiso.max' => 'El permiso no puede superar los 50 caracteres.',
         ];
     }
 }

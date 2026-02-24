@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class ChangePasswordRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,7 +15,7 @@ class ChangePasswordRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Define las reglas de validación para la solicitud.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
@@ -32,11 +32,17 @@ class ChangePasswordRequest extends FormRequest
         ];
     }
 
+    /**
+     * Define los mensajes de error personalizados para las reglas de validación.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
-            'new_password.confirmed' => 'Las contraseñas no coinciden',
-            'new_password.min' => 'La nueva contraseña debe tener mínimo 8 caracteres',
+            'new_password.confirmed' => 'Las contraseñas no coinciden.',
+            'new_password.min' => 'La nueva contraseña debe tener mínimo 8 caracteres.',
         ];
     }
+
 }

@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class updateSchedules extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,7 +15,7 @@ class updateSchedules extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Define las reglas de validación para la solicitud.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
@@ -29,6 +29,9 @@ class updateSchedules extends FormRequest
         ];
     }
 
+    /**
+     * Define los mensajes de error personalizados para las reglas de validación.
+     */
     public function messages(): array
     {
         return [

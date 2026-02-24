@@ -1,13 +1,17 @@
 <?php
 
-namespace App\Http\Requests\UserstatusServices;
+namespace App\Http\Requests\state_users;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class updateuser_statuses extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Determina si el usuario está autorizado a realizar esta solicitud.
+     *
+     * Por defecto, está establecido en `false`. Deberías revisar y modificar
+     * esto según tus necesidades de autorización.
      */
     public function authorize(): bool
     {
@@ -15,16 +19,19 @@ class updateuser_statuses extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Define las reglas de validación que se aplican a la solicitud.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        // Obtiene el ID del estado de usuario de la ruta.
         $id = $this->route('id');
 
         return [
-            'nombre' => "required|string|max:50|unique:states_Reason,name,{$id}",
+            // 'nombre' es obligatorio, debe ser una cadena de texto, no debe exceder los 50 caracteres,
+            // y debe ser único en la tabla 'states_Reason' ignorando el registro actual.
+            'nombre' => ['required', 'string', 'max:50', Rule::unique('state_users', 'name')->ignore($id)],
         ];
     }
     public function messages(): array

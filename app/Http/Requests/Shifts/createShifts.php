@@ -6,26 +6,27 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class createShifts extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+    
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Define las reglas de validación para la solicitud.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
+            // El campo 'nombre' es obligatorio, debe ser una cadena de texto y tener al menos 3 caracteres.
             'nombre'  => 'required|string|min:3',
+            // El campo 'horario_id' debe ser numérico y existir en la tabla 'schedules'.
             'horario_id' => 'numeric|exists:schedules,id',
         ];
     }
+
 
     public function messages(): array
     {
@@ -34,7 +35,7 @@ class createShifts extends FormRequest
             'nombre.string'   => 'El nombre debe ser texto.',
             'nombre.min'      => 'El nombre debe tener al menos 3 caracteres.',
 
-            'horario_id.numeric' => 'El horario debe ser numero.',
+            'horario_id.numeric' => 'El horario debe ser un número.',
         ];
     }
 }

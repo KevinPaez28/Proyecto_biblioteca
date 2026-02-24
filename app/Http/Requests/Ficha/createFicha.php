@@ -6,6 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class createFicha extends FormRequest
 {
+    
+
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -14,6 +17,12 @@ class createFicha extends FormRequest
         return true;
     }
 
+    /**
+     * Define las reglas de validación para la solicitud.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     *  - 'ficha':  Obligatorio y único en la tabla 'ficha', columna 'ficha'.
+     */
     /**
      * Get the validation rules that apply to the request.
      *
@@ -27,6 +36,11 @@ class createFicha extends FormRequest
         ];
     }
 
+    /**
+     *  Define los mensajes de error personalizados para las reglas de validación.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
@@ -37,4 +51,5 @@ class createFicha extends FormRequest
             'programa.exists' => 'El ID del programa no existe en la tabla de programas.',
         ];
     }
+
 }

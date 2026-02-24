@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class updateProfile extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,16 +15,16 @@ class updateProfile extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * Define las reglas de validación para la solicitud.
      */
+
+    
     public function rules(): array
     {
         $id = $this->route('id');
         return [
             'usuario'   => "required|integer|exists:users,{$id}",
-            'nombre'    => 'required|string|max:100',
+            'nombre'    => 'required|string|max:100', 
             'apellidos'  => 'required|string|max:100',
             'telefono'   => 'string|max:10',
             'correo'    => 'required|email|max:255|unique:profiles,email',
@@ -33,7 +33,7 @@ class updateProfile extends FormRequest
     }
 
     /**
-     * Customize error messages.
+     *  Define los mensajes de error personalizados para las reglas de validación.
      */
     public function messages(): array
     {
@@ -54,4 +54,5 @@ class updateProfile extends FormRequest
             'programa.exists'   => 'El programa seleccionado no existe.',
         ];
     }
+
 }

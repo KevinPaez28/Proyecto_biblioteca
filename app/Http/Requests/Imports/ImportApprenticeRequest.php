@@ -6,11 +6,17 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ImportApprenticeRequest extends FormRequest
 {
+    /**
+     * Autoriza al usuario a realizar esta solicitud.
+     */
     public function authorize(): bool
     {
         return true; 
     }
 
+    /**
+     * Define las reglas de validación para la solicitud.
+     */
     public function rules(): array
     {
         return [
@@ -22,6 +28,9 @@ class ImportApprenticeRequest extends FormRequest
         ];
     }
 
+    /**
+     *  Define los mensajes de error personalizados para las reglas de validación.
+     */
     public function messages(): array
     {
         return [
@@ -32,6 +41,9 @@ class ImportApprenticeRequest extends FormRequest
         ];
     }
 
+    /**
+     *  Define los atributos personalizados para las reglas de validación.
+     */
     public function attributes(): array
     {
         return [

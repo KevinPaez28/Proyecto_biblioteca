@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class createRoles extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,19 +15,22 @@ class createRoles extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Define las reglas de validación para la solicitud.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
+            // El campo 'name' es obligatorio, debe ser una cadena de texto y no debe superar los 50 caracteres.
             'name' => 'required|string|max:50',
         ];
     }
 
     /**
-     * Mensajes personalizados para errores de validación.
+     * Define los mensajes de error personalizados para las reglas de validación.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
@@ -41,4 +44,5 @@ class createRoles extends FormRequest
           
         ];
     }
+
 }

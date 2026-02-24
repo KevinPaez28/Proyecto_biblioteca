@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class updateStates extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,10 +15,10 @@ class updateStates extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * Define las reglas de validación para la solicitud.
      */
+
+    
     public function rules(): array
     {
         $id = $this->route('id');
@@ -28,6 +28,9 @@ class updateStates extends FormRequest
         ];
     }
     public function messages(): array
+    /**
+     *  Define los mensajes de error personalizados para las reglas de validación.
+     */
     {
         return [
             'nombre.required' => 'El nombre es obligatorio.',

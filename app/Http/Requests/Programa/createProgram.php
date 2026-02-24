@@ -7,29 +7,29 @@ use Illuminate\Foundation\Http\FormRequest;
 class createProgram extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
+    
     public function rules(): array
+    /**
+     * Define las reglas de validación para la solicitud.
+     */
     {
         return [
             'programa_formacion' => 'unique:programs,training_program|required|string|max:100'
         ];
     }
 
-    /**
-     * Custom messages for validation errors.
-     */
+
     public function messages(): array
+    /**
+     *  Define los mensajes de error personalizados para las reglas de validación.
+     */
     {
         return [
             'programa_formacion.required' => 'El nombre del programa es obligatorio.',

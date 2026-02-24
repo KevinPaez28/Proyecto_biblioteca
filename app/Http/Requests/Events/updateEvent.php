@@ -6,11 +6,22 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class updateEvent extends FormRequest
 {
+    /**
+     * Autoriza al usuario a realizar esta solicitud.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Define las reglas de validación que se aplicarán a la solicitud.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     *  - `nombre`: Obligatorio, string, máximo 255 caracteres, único en la tabla `events`
+     *  ignorando el evento actual (`$eventoId`).
+     *  - Los demás campos siguen lógicas similares de obligatoriedad y validación de formato.
+     */
     public function rules(): array
     {
         $eventoId = $this->route('id');
@@ -26,6 +37,12 @@ class updateEvent extends FormRequest
         ];
     }
 
+    /**
+     * Define los mensajes de error personalizados para las reglas de validación.
+     *
+     * @return array<string, string>
+     *  - Asocia cada regla de validación con un mensaje en español más descriptivo.
+     */
     public function messages(): array
     {
         return [
@@ -55,4 +72,5 @@ class updateEvent extends FormRequest
             'estado_id.exists'       => 'El estado seleccionado no existe.',
         ];
     }
+
 }

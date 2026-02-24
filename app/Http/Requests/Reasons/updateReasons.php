@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class updateReasons extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,20 +15,28 @@ class updateReasons extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Define las reglas de validación para la solicitud.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-     public function rules(): array
+    public function rules(): array
     {
-        $Id = $this->route('id'); // ID de la jornada que se actualiza
+        // Obtiene el ID de la razón que se está actualizando desde la ruta.
+        $Id = $this->route('id');
 
         return [
+            // El campo 'nombre' es obligatorio, debe ser una cadena de texto y debe ser único en la tabla 'reasons',
+            // ignorando la razón actual que se está actualizando (identificada por $Id).
             'nombre' => "required|string|unique:reasons,name,{$Id}",
+
+            // El campo 'descripcion' es opcional y debe ser una cadena de texto.
             'descripcion' => 'nullable|string|',
+
+            // El campo 'estados_id' es obligatorio y debe existir en la tabla 'states_Reason'.
             'estados_id' => 'required|exists:states_Reason,id',
         ];
     }
+
     public function messages(): array
     {
         return [
@@ -44,4 +52,5 @@ class updateReasons extends FormRequest
             'estados_id.exists' => 'El Estado seleccionado no es válido.',
         ];
     }
+
 }

@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class createProfile extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,7 +15,9 @@ class createProfile extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Define las reglas de validación que se aplicarán a la solicitud.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -30,7 +32,7 @@ class createProfile extends FormRequest
     }
 
     /**
-     * Customize error messages.
+     * Personaliza los mensajes de error para las reglas de validación.
      */
     public function messages(): array
     {
@@ -51,4 +53,5 @@ class createProfile extends FormRequest
             'programa.exists'   => 'El programa seleccionado no existe.',
         ];
     }
+
 }

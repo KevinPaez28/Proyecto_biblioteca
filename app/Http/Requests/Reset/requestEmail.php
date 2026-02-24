@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class requestEmail extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,7 +15,7 @@ class requestEmail extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Define las reglas de validación para la solicitud.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
@@ -27,13 +27,16 @@ class requestEmail extends FormRequest
     }
 
     /**
-     * Custom messages for validation errors.
+     * Define los mensajes de error personalizados para las reglas de validación.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
         return [
             'document.required' => 'El documento es obligatorio.',
-            'document.exists'   => 'El documento no existe en el sistema.',
+            'document.exists' => 'El documento no existe en el sistema.',
         ];
     }
+
 }

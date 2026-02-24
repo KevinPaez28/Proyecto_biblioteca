@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class createHistory extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,10 +15,10 @@ class createHistory extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
+     * Define las reglas de validación para la solicitud.
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+   
     public function rules(): array
     {
         return [
@@ -26,16 +26,17 @@ class createHistory extends FormRequest
             'accion'=> 'required|integer|exists:actions,id',
             'descripcion'=> 'required|string',
             'tipo_modelo'=> 'required|string',
-            'modelo_id'=> 'required|string',
+            'modelo_id'=> 'required|string', //Se cambio a string porque permite guardar valores alfanumericos
             'fecha_creacion'=> 'required|',
         ];
     }
 
     /**
-     * Mensajes de validación personalizados en español.
+     *  Define los mensajes de error personalizados para las reglas de validación.
      *
      * @return array<string, string>
      */
+   
     public function messages(): array
     {
         return [
@@ -56,7 +57,7 @@ class createHistory extends FormRequest
             'tipo_modelo.max'         => 'El tipo de modelo no puede tener más de 100 caracteres.',
             
             'modelo_id.required'    => 'El tipo de modelo es obligatorio.',
-            'modelo_id.string'      => 'El tipo de modelo debe ser un texto.',
+            'modelo_id.string'      => 'El ID del modelo debe ser un texto.',
             'modelo_id.max'         => 'El tipo de modelo no puede tener más de 100 caracteres.',
 
             'fecha_creacion.required' => 'La fecha de creación es obligatoria.',

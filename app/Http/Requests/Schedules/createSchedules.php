@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class createSchedules extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Autoriza al usuario a realizar esta solicitud.
      */
     public function authorize(): bool
     {
@@ -15,11 +15,11 @@ class createSchedules extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
+     * Define las reglas de validación para la solicitud.
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
+
     {
         return [
             'hora_inicio' => 'required|string|',
@@ -29,6 +29,9 @@ class createSchedules extends FormRequest
         ];
     }
 
+    /**
+     * Define los mensajes de error personalizados para las reglas de validación.
+     */
     public function messages(): array
     {
         return [
@@ -37,7 +40,6 @@ class createSchedules extends FormRequest
 
             'hora_fin.required'        => 'La hora de fin es obligatoria.',
             'hora_fin.string'          => 'La hora de fin debe ser texto.',
-            'hora_fin.date_format'     => 'La hora de fin debe tener el formato HH:MM.',
             'hora_fin.after'           => 'La hora de fin debe ser mayor que la hora de inicio.',
             'nombre.required'          => 'El nombre de la jornada es obligatorio.',
             'nombre.string'            => 'El nombre debe ser texto.',

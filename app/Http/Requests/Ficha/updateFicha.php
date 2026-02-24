@@ -7,11 +7,20 @@ use Illuminate\Foundation\Http\FormRequest;
 class updateFicha extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Define las reglas de validación para la solicitud.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     *  - 'ficha': Obligatorio, máximo 20 caracteres, y único en la tabla 'ficha' ignorando el ID actual.
+     *  - 'programa': Obligatorio y debe existir en la tabla 'programs'.
      */
     public function rules(): array
     {
-        // Obtener el ID de la ficha desde la ruta /ficha/{id}
+        /**
+         * Obtiene el ID de la ficha desde la ruta.
+         *
+         *  Se utiliza para la regla de validación 'unique' y evitar que la
+         *  ficha actual se tome en cuenta al verificar la unicidad.
+         */
         $fichaId = $this->route('id');
 
         return [
@@ -20,6 +29,11 @@ class updateFicha extends FormRequest
         ];
     }
 
+    /**
+     *  Define los mensajes de error personalizados para las reglas de validación.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
@@ -32,4 +46,5 @@ class updateFicha extends FormRequest
             'programa.exists' => 'El programa seleccionado no existe.',
         ];
     }
+
 }

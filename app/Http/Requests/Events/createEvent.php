@@ -6,11 +6,21 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class createEvent extends FormRequest
 {
+    
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Define las reglas de validación que se aplicarán a la solicitud.
+     *
+     * Especifica qué campos son obligatorios, de qué tipo deben ser y,
+     * en algunos casos, qué valores deben tener (por ejemplo, un ID existente
+     * en otra tabla). Esto asegura que los datos recibidos sean válidos
+     * antes de procesarlos en el controlador.
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
         return [
@@ -24,6 +34,13 @@ class createEvent extends FormRequest
         ];
     }
 
+    /**
+     * Personaliza los mensajes de error para las reglas de validación.
+     *
+     * En lugar de mostrar los mensajes predeterminados de Laravel,
+     * este método permite definir mensajes específicos en español para cada regla,
+     * mejorando la experiencia del usuario al hacer más claro el motivo del error.
+     */
     public function messages(): array
     {
         return [
@@ -47,4 +64,5 @@ class createEvent extends FormRequest
             'estado_id.exists'        => 'El estado seleccionado no existe.',
         ];
     }
+
 }

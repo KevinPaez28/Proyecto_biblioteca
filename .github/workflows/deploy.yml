@@ -1,0 +1,32 @@
+name: Laravel Self-Hosted Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    # IMPORTANTE: Aquí dices que use tu servidor, no los de GitHub
+    runs-on: self-hosted 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader
+          npm install
+          npm run build
+
+      - name: Run Migrations and Cache
+        run: |
+          php artisan migrate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          
+      - name: Fix Permissions
+        run: |
+          sudo chown -R www-data:www-data .
+          sudo chmod -R 775 storage bootstrap/cache
