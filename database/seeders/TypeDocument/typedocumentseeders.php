@@ -2,7 +2,7 @@
 
 namespace Database\Seeders\TypeDocument;
 
-use App\Models\TypeDocuments\TypeDocument;
+use App\Models\TypeDocuments\typeDocument;
 use Illuminate\Database\Seeder;
 
 class typedocumentseeders extends Seeder
