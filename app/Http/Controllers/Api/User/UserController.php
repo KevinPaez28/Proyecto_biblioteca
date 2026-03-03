@@ -142,30 +142,7 @@ class UserController extends Controller
     public function create(UserRequest $request)
     {
         $data = $request->validated();
-
-        // ================= VALIDAR RECAPTCHA =================
-        $recaptcha = Http::asForm()->post(
-            'https://www.google.com/recaptcha/api/siteverify',
-            [
-                'secret'   => env('RECAPTCHA_SECRET_KEY'),
-                'response' => $request->recaptcha_token,
-                'remoteip' => $request->ip(),
-            ]
-        )->json();
-
-        if (
-            empty($recaptcha['success']) ||
-            $recaptcha['success'] !== true ||
-            ($recaptcha['score'] ?? 0) < 0.5 ||
-            ($recaptcha['action'] ?? '') !== 'registro_usuario'
-        ) {
-            return ResponseFormatter::error(
-                'Verificación de seguridad fallida (reCAPTCHA)',
-                403
-            );
-        }
-
-        // ================= CONTINUAR REGISTRO =================
+      // ================= CONTINUAR REGISTRO =================
         $response = $this->userService->CreateUser($data);
 
         if ($response['error']) {

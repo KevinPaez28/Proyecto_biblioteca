@@ -33,7 +33,6 @@ class UserRequest extends FormRequest
             'programa'  => 'nullable|exists:programs,id',
             'correo'    => 'required|email|max:50|unique:users,email',
             'telefono'  => 'required|string|max:10|min:10',
-            'recaptcha_token' => 'required|string'
         ];
     }
 

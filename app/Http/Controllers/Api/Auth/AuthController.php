@@ -65,7 +65,7 @@ class AuthController extends Controller
         ->cookie($cookieToken)
         ->cookie($cookieRefresh);
     }
-
+    
     /**
      * Renueva los tokens de acceso expirados.
      * * Utiliza el Refresh Token para emitir un nuevo juego de credenciales sin pedir login.
