@@ -43,12 +43,12 @@ Route::post('/email/verification-notification', [EmailVerificationController::cl
 // ================= Sin tokens =================
 Route::get('user/', [UserController::class, 'getAll']);
 Route::post('user/create', [UserController::class, 'create']);
-Route::get('roles/', [rolesController::class, 'getAll']);
-Route::get('programa/', [ProgramController::class, 'getAll']);
+Route::get('roles', [rolesController::class, 'getAll']);
+Route::get('programa', [ProgramController::class, 'getAll']);
 Route::post('perfil/create', [ProfileController::class, 'create']);
-Route::get('ficha/', [FichaController::class, 'getAll']);
-Route::get('motivos/', [ReasonController::class, 'getAll']);
-Route::get('estadoMotivos/', [estatesController::class, 'getAll']);
+Route::get('ficha', [FichaController::class, 'getAll']);
+Route::get('motivos', [ReasonController::class, 'getAll']);
+Route::get('estadoMotivos', [estatesController::class, 'getAll']);
 Route::get('eventos/', [EventController::class, 'getAll']);
 Route::get('eventos/today', [EventController::class, 'gettoday']);
 Route::post('asistencia/create', [assitancesController::class, 'create']);
@@ -78,9 +78,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::prefix('Tipo_documento')->group(function () {
-        Route::post('/create', [TypedocumentController::class, 'create'])->middleware('permission:document.store');
-        Route::patch('/{id}', [TypedocumentController::class, 'update'])->middleware('permission:document.update');
-        Route::delete('/delete/{id}', [TypedocumentController::class, 'delete'])->middleware('permission:document.destroy');
+        Route::post('/create', [TypeDocumentController::class, 'create'])->middleware('permission:document.store');
+        Route::patch('/{id}', [TypeDocumentController::class, 'update'])->middleware('permission:document.update');
+        Route::delete('/delete/{id}', [TypeDocumentController::class, 'delete'])->middleware('permission:document.destroy');
     });
 
     // --------- ROLES ----------
