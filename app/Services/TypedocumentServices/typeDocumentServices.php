@@ -2,11 +2,11 @@
 
 namespace App\Services\TypedocumentServices;
 
-use App\Models\TypeDocuments\TypeDocument;
+use App\Models\TypeDocuments\typeDocument;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-class TypeDocumentServices
+class typeDocumentServices
 {
     public function getTypeDocuments()
     {

@@ -6,7 +6,7 @@ use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Createtypedocument\Createtypedocument;
 use App\Http\Requests\TypeDocument\updateTypeDocument;
-use App\Services\TypedocumentServices\TypeDocumentServices;
+use App\Services\TypedocumentServices\typeDocumentServices;
 /**
  * Class TypeDocumentController
  * @package App\Http\Controllers\Api\TypeDocument
