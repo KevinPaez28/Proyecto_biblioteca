@@ -19,7 +19,7 @@ use App\Http\Controllers\Api\Schedules\SchedulesController;
 use App\Http\Controllers\Api\Shifts\ShiftsController;
 use App\Http\Controllers\Api\state_events\stateEventsController;
 use App\Http\Controllers\Api\states_rooms\StatesRoomsController;
-use App\Http\Controllers\Api\typeDocument\TypeDocumentController;
+use App\Http\Controllers\Api\TypeDocument\TypeDocumentController;
 use App\Http\Controllers\Api\User\UserController;
 use App\Http\Controllers\Api\UserStatus\UserStatusController;
 use Illuminate\Support\Facades\Route;
