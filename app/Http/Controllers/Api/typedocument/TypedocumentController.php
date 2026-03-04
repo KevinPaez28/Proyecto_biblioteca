@@ -1,6 +1,6 @@
 <?php
 
-namespace app\Http\Controllers\Api\TypeDocument;
+namespace App\Http\Controllers\Api\TypeDocument;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
