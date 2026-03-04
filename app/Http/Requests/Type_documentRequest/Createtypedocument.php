@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Createtypedocument;
+namespace App\Http\Requests\TypeDocument;
 
 use Illuminate\Foundation\Http\FormRequest;
 

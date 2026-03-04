@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\typeDocument;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Createtypedocument\Createtypedocument;
+use App\Http\Requests\TypeDocument\Createtypedocument;
 use App\Http\Requests\TypeDocument\updateTypeDocument;
 use App\Services\TypedocumentServices\typeDocumentServices;
 /**
