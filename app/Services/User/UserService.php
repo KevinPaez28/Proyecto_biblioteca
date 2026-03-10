@@ -191,7 +191,7 @@ class UserService
             });
         }
 
-        $users = $query->paginate($perPage); // PAGINACIÓN
+        $users = $query->paginate($perPage);
 
         return [
             "error" => false,
@@ -201,20 +201,21 @@ class UserService
                 : "Usuarios obtenidos con éxito",
             "data" => [
                 "records" => $users->map(function ($user) {
+                    // 💡 Protegemos cada relación
+                    $roles = $user->roles ?? collect();
                     return [
                         'id' => $user->id,
                         'document_type_id' => $user->documentType->id ?? null,
-                        'document_type'    => $user->documentType->acronym ?? '',
+                        'document_type' => $user->documentType->acronym ?? '',
                         'document' => $user->document,
                         'first_name' => $user->perfil->name ?? '',
                         'last_name' => $user->perfil->last_name ?? '',
                         'email' => $user->email,
                         'phone_number' => $user->perfil->phone ?? '',
-                        'rol' => $user->roles->pluck('name')->implode(', '),
+                        'rol' => $roles->pluck('name')->implode(', '),
                         'estado' => $user->status->status ?? '',
                     ];
                 }),
-
                 "meta" => [
                     "current_page" => $users->currentPage(),
                     "last_page" => $users->lastPage(),
