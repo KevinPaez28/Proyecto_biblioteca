@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
 
 class UserService
@@ -154,78 +155,99 @@ class UserService
     // =================== MODIFICADO PARA PAGINACIÓN ===================
     public function getAllInformation(array $filters = [], $perPage = 10)
     {
-        $query = User::with(['perfil', 'roles', 'status', 'documentType'])
-            ->orderBy('id');
+        try {
+            $query = User::with(['perfil', 'roles', 'status', 'documentType'])
+                ->orderBy('id');
 
-        if (!empty($filters['nombre'])) {
-            $query->whereHas('perfil', function ($q) use ($filters) {
-                $q->where('name', 'like', '%' . $filters['nombre'] . '%');
+            // Filtros opcionales
+            if (!empty($filters['nombre'])) {
+                $query->whereHas('perfil', function ($q) use ($filters) {
+                    $q->where('name', 'like', '%' . $filters['nombre'] . '%');
+                });
+            }
+
+            if (!empty($filters['apellido'])) {
+                $query->whereHas('perfil', function ($q) use ($filters) {
+                    $q->where('last_name', 'like', '%' . $filters['apellido'] . '%');
+                });
+            }
+
+            if (!empty($filters['documento'])) {
+                $query->where('document', 'like', '%' . $filters['documento'] . '%');
+            }
+
+            if (!empty($filters['rol'])) {
+                $query->whereHas('roles', function ($q) use ($filters) {
+                    $q->where('name', $filters['rol']);
+                });
+            }
+
+            if (!empty($filters['estado'])) {
+                $query->whereHas('status', function ($q) use ($filters) {
+                    $q->where('status', $filters['estado']);
+                });
+            }
+
+            if (!empty($filters['tipo_documento'])) {
+                $query->whereHas('documentType', function ($q) use ($filters) {
+                    $q->where('acronym', $filters['tipo_documento']);
+                });
+            }
+
+            $users = $query->paginate($perPage);
+
+            // Mapear usuarios asegurando relaciones nulas
+            $records = $users->map(function ($user) {
+                $roles = $user->roles ?? collect();
+                $perfil = $user->perfil ?? null;
+                $documentType = $user->documentType ?? null;
+                $status = $user->status ?? null;
+
+                return [
+                    'id' => $user->id,
+                    'document_type_id' => $documentType->id ?? null,
+                    'document_type' => $documentType->acronym ?? '',
+                    'document' => $user->document,
+                    'first_name' => $perfil->name ?? '',
+                    'last_name' => $perfil->last_name ?? '',
+                    'email' => $user->email,
+                    'phone_number' => $perfil->phone ?? '',
+                    'rol' => $roles->pluck('name')->implode(', '),
+                    'estado' => $status->status ?? '',
+                ];
             });
-        }
 
-        if (!empty($filters['apellido'])) {
-            $query->whereHas('perfil', function ($q) use ($filters) {
-                $q->where('last_name', 'like', '%' . $filters['apellido'] . '%');
-            });
-        }
-
-        if (!empty($filters['documento'])) {
-            $query->where('document', 'like', '%' . $filters['documento'] . '%');
-        }
-
-        if (!empty($filters['rol'])) {
-            $query->whereHas('roles', function ($q) use ($filters) {
-                $q->where('name', $filters['rol']);
-            });
-        }
-
-        if (!empty($filters['estado'])) {
-            $query->whereHas('status', function ($q) use ($filters) {
-                $q->where('name', $filters['estado']);
-            });
-        }
-
-        if (!empty($filters['tipo_documento'])) {
-            $query->whereHas('documentType', function ($q) use ($filters) {
-                $q->where('acronym', $filters['tipo_documento']);
-            });
-        }
-
-        $users = $query->paginate($perPage);
-
-        return [
-            "error" => false,
-            "code" => 200,
-            "message" => $users->isEmpty()
-                ? "No hay usuarios registrados"
-                : "Usuarios obtenidos con éxito",
-            "data" => [
-                "records" => $users->map(function ($user) {
-                    // 💡 Protegemos cada relación
-                    $roles = $user->roles ?? collect();
-                    return [
-                        'id' => $user->id,
-                        'document_type_id' => $user->documentType->id ?? null,
-                        'document_type' => $user->documentType->acronym ?? '',
-                        'document' => $user->document,
-                        'first_name' => $user->perfil->name ?? '',
-                        'last_name' => $user->perfil->last_name ?? '',
-                        'email' => $user->email,
-                        'phone_number' => $user->perfil->phone ?? '',
-                        'rol' => $roles->pluck('name')->implode(', '),
-                        'estado' => $user->status->status ?? '',
-                    ];
-                }),
-                "meta" => [
-                    "current_page" => $users->currentPage(),
-                    "last_page" => $users->lastPage(),
-                    "per_page" => $users->perPage(),
-                    "total" => $users->total(),
+            return [
+                "error" => false,
+                "code" => 200,
+                "message" => $users->isEmpty()
+                    ? "No hay usuarios registrados"
+                    : "Usuarios obtenidos con éxito",
+                "data" => [
+                    "records" => $records,
+                    "meta" => [
+                        "current_page" => $users->currentPage(),
+                        "last_page" => $users->lastPage(),
+                        "per_page" => $users->perPage(),
+                        "total" => $users->total(),
+                    ]
                 ]
-            ]
-        ];
-    }
+            ];
+        } catch (Exception $e) {
+            // Log para debug
+            Log::error('Error getAllInformation: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
 
+            // Retornar JSON con error controlado
+            return [
+                "error" => true,
+                "code" => 500,
+                "message" => "Error interno del servidor",
+                "errors" => [$e->getMessage()],
+            ];
+        }
+    }
     public function getAllApprentices(array $filters = [], $perPage = 10)
     {
         $query = User::with(['perfil', 'roles', 'status', 'fichas.programa'])
