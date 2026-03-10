@@ -248,6 +248,7 @@ class UserService
             ];
         }
     }
+    
     public function getAllApprentices(array $filters = [], $perPage = 10)
     {
         $query = User::with(['perfil', 'roles', 'status', 'fichas.programa'])
@@ -326,7 +327,6 @@ class UserService
             ]
         ];
     }
-
 
     public function updateUser(array $data, $id)
     {
@@ -431,7 +431,6 @@ class UserService
             "message" => "Contraseña actualizada correctamente"
         ];
     }
-
 
     public function deleteUser($id)
     {
