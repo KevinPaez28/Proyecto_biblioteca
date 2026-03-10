@@ -26,17 +26,11 @@ class UserController extends Controller
 
     protected $importService;
 
-    public function __construct(UserService $userservice, ImportExcelService $importService)
-    /**
-     * UserController constructor.
-     * @param UserService $userservice
-     * @param ImportExcelService $importService
-     */
-    {
-
+    public function __construct(UserService $userService,ImportExcelService $importService) {
+        $this->userService = $userService;
         $this->importService = $importService;
-        $this->userService = $userservice;
     }
+    
 
     /**
      * Obtiene todos los usuarios.
