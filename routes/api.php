@@ -31,6 +31,7 @@ Route::get('/prueba', function () {
 
 // ================= AUTH =================
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 Route::post('/validate', [PasswordResetController::class, 'validateToken']);
 Route::post('/Reset-password', [PasswordResetController::class, 'forgotPassword']);
 Route::post('/Reset-password/change', [PasswordResetController::class, 'resetPassword']);
