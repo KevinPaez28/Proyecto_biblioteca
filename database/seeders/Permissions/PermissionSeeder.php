@@ -117,10 +117,10 @@ class PermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            permission::create([
-                'name' => $permission['name'],
-                'description' => $permission['description']
-            ]);
+            permission::firstOrCreate(
+                ['name' => $permission['name'], 'guard_name' => 'web'], // busca por nombre y guard
+                ['description' => $permission['description']]           // si no existe, lo crea
+            );
         }
     }
 }
