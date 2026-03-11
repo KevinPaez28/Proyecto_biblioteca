@@ -5,7 +5,7 @@ namespace App\Services\ImportExcel;
 use App\Models\Ficha\Ficha;
 use App\Models\Ficha_users\ficha_user;
 use App\Models\Profiles\Profiles;
-use App\Models\TypeDocuments\TypeDocument;
+use App\Models\TypeDocuments\typeDocument;
 use App\Models\User\User;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Spatie\Permission\Models\Role;
