@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
+        apiPrefix: '',   // 👈 aquí quitamos /api
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -32,10 +33,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             'force.json'
         ]);
-
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
-        $exceptions->render(fn (Throwable $e, $request) => ApiExceptionHandler::handle($e) );
-        
+        $exceptions->render(fn(Throwable $e, $request) => ApiExceptionHandler::handle($e));
     })->create();
