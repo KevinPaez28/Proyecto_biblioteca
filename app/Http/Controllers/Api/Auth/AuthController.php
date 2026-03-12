@@ -72,11 +72,18 @@ class AuthController extends Controller
      */
     public function refreshToken(Request $request)
     {
-        $user = Auth::user();
-
         $currentRefreshToken = $request->cookie('refresh_token');
 
-        $result = $this->authService->refreshToken($currentRefreshToken, $user);
+        if (!$currentRefreshToken) {
+            return ResponseFormatter::error('No refresh token found', 401);
+        }
+
+        // Valida refresh_token y obtén user por tu lógica (ej: DB o JWT decode)
+        $result = $this->authService->refreshToken($currentRefreshToken); // Quita $user
+
+        if ($result['error']) {
+            return ResponseFormatter::error($result['message'], $result['code']);
+        }
 
         return response()->json([
             'success' => true,
@@ -86,6 +93,7 @@ class AuthController extends Controller
             ->cookie($result['cookieToken'])
             ->cookie($result['cookieRefreshToken']);
     }
+
     /**
      * Cierra la sesión activa.
      * * Revoca los tokens en el servidor y expira las cookies en el cliente para mayor seguridad.

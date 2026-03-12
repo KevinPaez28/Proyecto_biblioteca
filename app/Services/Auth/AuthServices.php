@@ -37,7 +37,7 @@ class AuthServices
                 "code" => 403,
                 "message" => "No tienes permisos para acceder.",
             ];
-        }        
+        }
 
         if (!$user->perfil) {
             return [
@@ -119,14 +119,32 @@ class AuthServices
         )->plainTextToken;
     }
 
-    public function refreshToken(string $currentRefreshToken, User $user)
+    public function refreshToken(string $currentRefreshToken)
     {
+        $storedToken = PersonalAccessToken::findToken($currentRefreshToken);
 
-        $refreshToken = PersonalAccessToken::findToken($currentRefreshToken);
+        if (!$storedToken) {
+            return [
+                "error" => true,
+                "code" => 401,
+                "message" => "Refresh token inválido o no encontrado"
+            ];
+        }
+
+        $user = $storedToken->tokenable;
+        if (!$user || $user->cannot('issue-access-token')) { // O chequea abilities
+            return [
+                "error" => true,
+                "code" => 403,
+                "message" => "Token no autorizado"
+            ];
+        }
+
+        // Marca como usado
+        $storedToken->forceFill(['last_used_at' => now()])->save();
 
         $accessToken = $this->generateAccessToken($user);
-
-        $refreshToken = $this->renewRefreshToken($refreshToken, $user) ?: $currentRefreshToken;
+        $newRefreshToken = $this->renewRefreshToken($storedToken, $user) ?: $currentRefreshToken;
 
         $cookieToken = cookie(
             'access_token',
@@ -142,7 +160,7 @@ class AuthServices
 
         $cookieRefreshToken = cookie(
             'refresh_token',
-            $refreshToken,
+            $newRefreshToken,
             60 * 24 * 365 * 100,
             '/',
             null,
@@ -155,7 +173,7 @@ class AuthServices
         return [
             "error" => false,
             "code" => 200,
-            "message" => "Logueo exitoso",
+            "message" => "Tokens refrescados",
             "data" => [
                 'cookieToken' => $cookieToken,
                 'cookieRefreshToken' => $cookieRefreshToken,
@@ -163,26 +181,19 @@ class AuthServices
         ];
     }
 
-    private function renewRefreshToken(PersonalAccessToken $refreshToken, User $user)
+    private function renewRefreshToken(PersonalAccessToken $storedToken, User $user)
     {
-
-        $expiresToken = Carbon::parse($refreshToken->expires_at);
-
-        $remainingTime = $expiresToken->diffInSeconds(Carbon::now(), false);
-
-        if ($remainingTime < 60 * 60 * 24) {
-
-            $refreshToken->delete();
-
+        if (!$storedToken->expires_at || $storedToken->expires_at->isPast()) {
+            $storedToken->delete();
             return $user->createToken(
                 'refreshToken',
                 [TokenAbility::ISSUE_ACCESS_TOKEN->value],
-                Carbon::now()->addMinutes(config('sanctum.refresh_token_expiration'))
+                now()->addMinutes(config('sanctum.refresh_token_expiration', 10080)) // 7 días default
             )->plainTextToken;
         }
-
         return null;
     }
+
 
     public function createExpiredCookies()
     {
