@@ -8,7 +8,7 @@ use App\Http\Requests\TypeDocument\Createtypedocument;
 use App\Http\Requests\TypeDocument\updateTypeDocument;
 use App\Services\TypedocumentServices\typeDocumentServices;
 /**
- * Class TypeDocumentController
+ * Class TypeDocumentControlleur
  * @package App\Http\Controllers\Api\TypeDocument
  *
  * Controlador para la gestión de tipos de documentos.

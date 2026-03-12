@@ -95,6 +95,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // --------- PROGRAMAS ----------
     Route::prefix('programa')->group(function () {
+        Route::get('/search', [ProgramController::class, 'getByInformation'])->middleware('permission:programs.store');
         Route::post('/create', [ProgramController::class, 'create'])->middleware('permission:programs.store');
         Route::patch('/{id}', [ProgramController::class, 'update'])->middleware('permission:programs.update');
         Route::delete('/delete/{id}', [ProgramController::class, 'delete'])->middleware('permission:programs.destroy');
@@ -205,6 +206,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('asistencia')->group(function () {
         Route::get('/', [assitancesController::class, 'getAll'])->middleware('permission:assistances.index');
         Route::get('export/reason', [assitancesController::class, 'getexportreason'])->middleware('permission:assistances.index');
+        Route::get('export/event', [assitancesController::class, 'getexport'])->middleware('permission:assistances.index');
         Route::get('/events', [assitancesController::class, 'getEvents'])->middleware('permission:assistances.index');
         Route::post('/events/create', [assitancesController::class, 'createEventAssistance'])->middleware('permission:assistances.store');
         Route::patch('/{id}', [assitancesController::class, 'update'])->middleware('permission:assistances.update');

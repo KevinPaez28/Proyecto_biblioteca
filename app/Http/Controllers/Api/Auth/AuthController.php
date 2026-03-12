@@ -60,10 +60,10 @@ class AuthController extends Controller
             "success" => true,
             "code" => $result['code'],
             "message" => $result['message'],
-            "data" => array_diff_key($result['data'], array_flip(['cookieToken','cookieRefreshToken']))
+            "data" => array_diff_key($result['data'], array_flip(['cookieToken', 'cookieRefreshToken']))
         ])
-        ->cookie($cookieToken)
-        ->cookie($cookieRefresh);
+            ->cookie($cookieToken)
+            ->cookie($cookieRefresh);
     }
 
     /**
@@ -73,7 +73,8 @@ class AuthController extends Controller
     public function refreshToken(Request $request)
     {
         $user = Auth::user();
-        $currentRefreshToken = $request->bearerToken();
+
+        $currentRefreshToken = $request->cookie('refresh_token');
 
         $result = $this->authService->refreshToken($currentRefreshToken, $user);
 
@@ -81,10 +82,10 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Token refrescado exitosamente',
             'data' => []
-        ])->cookie($result['cookieToken'])
-          ->cookie($result['cookieRefreshToken']);
+        ])
+            ->cookie($result['cookieToken'])
+            ->cookie($result['cookieRefreshToken']);
     }
-
     /**
      * Cierra la sesión activa.
      * * Revoca los tokens en el servidor y expira las cookies en el cliente para mayor seguridad.
@@ -92,10 +93,10 @@ class AuthController extends Controller
     public function logOut(Request $request)
     {
         $user = Auth::user();
-        
+
         // El servicio genera cookies con tiempo de expiración pasado para eliminarlas
         $expiredCookies = $this->authService->createExpiredCookies();
-        
+
         $result = $this->authService->logOut($user);
 
         return response()->json([
@@ -104,7 +105,7 @@ class AuthController extends Controller
             "message" => $result['message'],
             "data" => $result['data']
         ])
-        ->cookie($expiredCookies['expiredAccessToken'])
-        ->cookie($expiredCookies['expiredRefreshToken']);
+            ->cookie($expiredCookies['expiredAccessToken'])
+            ->cookie($expiredCookies['expiredRefreshToken']);
     }
 }

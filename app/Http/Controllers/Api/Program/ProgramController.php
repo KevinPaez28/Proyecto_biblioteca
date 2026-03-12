@@ -53,6 +53,28 @@ class ProgramController extends Controller
      * @param createProgram $request
      * @return \Illuminate\Http\JsonResponse
      */
+
+    public function getByInformation(Request $request)
+    {
+        $filters = $request->only([
+            'nombre'
+        ]);
+
+        $response = $this->programaServices->getProgramByInformation($filters);
+
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
+    }
     public function create(createProgram $request)
     {
         // Valida los datos de la petición.
@@ -70,15 +92,15 @@ class ProgramController extends Controller
     }
     public function update(updateProgram $request, string $id)
     {
-      $data = $request->validated();
-  
-      // Actualiza el programa utilizando el servicio.
-      $response = $this->programaServices->updateProgram($data, $id);
-  
-      if ($response['error'])
-        return ResponseFormatter::error($response['message'], $response['code']);
-  
-      return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+        $data = $request->validated();
+
+        // Actualiza el programa utilizando el servicio.
+        $response = $this->programaServices->updateProgram($data, $id);
+
+        if ($response['error'])
+            return ResponseFormatter::error($response['message'], $response['code']);
+
+        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
     /**
@@ -91,7 +113,7 @@ class ProgramController extends Controller
         $response = $this->programaServices->deleteProgram($id);
 
         if ($response['error'])
-        // Si hay un error, devuelve una respuesta de error.
+            // Si hay un error, devuelve una respuesta de error.
             return ResponseFormatter::error($response['message'], $response['code']);
 
         // Si no hay error, devuelve una respuesta de éxito.
