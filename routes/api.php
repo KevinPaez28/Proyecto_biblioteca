@@ -45,6 +45,7 @@ Route::post('/email/verification-notification', [EmailVerificationController::cl
 Route::get('user/', [UserController::class, 'getAll']);
 Route::post('user/create', [UserController::class, 'create']);
 Route::get('roles/select', [rolesController::class, 'rolesSelected']);
+Route::get('roles', [rolesController::class, 'getAll']);
 Route::get('programa', [ProgramController::class, 'getAll']);
 Route::post('perfil/create', [ProfileController::class, 'create']);
 Route::get('ficha', [FichaController::class, 'getAll']);
@@ -86,7 +87,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // --------- ROLES ----------
     Route::prefix('roles')->group(function () {
-        Route::get('roles', [rolesController::class, 'getAll']);
         Route::get('/permisos', [rolesController::class, 'permissions']);
         Route::post('/create', [rolesController::class, 'create'])->middleware('permission:roles.store');
         Route::patch('/{id}', [rolesController::class, 'update'])->middleware('permission:roles.update');
