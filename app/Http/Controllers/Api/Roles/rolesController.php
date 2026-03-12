@@ -49,6 +49,17 @@ class rolesController extends Controller
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
+    public function rolesSelected()
+    {
+        $rolesPermitidos = ['admin', 'instructor'];
+
+        $response = $this->RoleServices->getRolesSelected($rolesPermitidos);
+
+        if ($response['error'])
+            return ResponseFormatter::error($response['message'], $response['code']);
+
+        return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
+    }
     /**
      * Obtiene todos los permisos.
      * @return \Illuminate\Http\JsonResponse
@@ -110,22 +121,22 @@ class rolesController extends Controller
     public function editRoles(permissions $request, string $id)
     {
         $data = $request->validated();
-    
+
         // Incluimos permisos enviados desde el frontend
         $permisos = $data['permisos'] ?? []; // array de IDs.
         $data['permisos'] = $permisos;
-    
+
         // Edita los roles utilizando el servicio.
         $response = $this->RoleServices->editRoles($data, $id);
-    
+
         if ($response['error'])
             // Si hay un error, devuelve una respuesta de error.
             return ResponseFormatter::error($response['message'], $response['code']);
-    
+
         // Si no hay error, devuelve una respuesta de éxito con los datos del rol editado.
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
-    
+
     /**
      * Elimina un rol existente.
      * @param string $id

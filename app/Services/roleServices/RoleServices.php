@@ -33,6 +33,28 @@ class RoleServices
         ];
     }
 
+    public function getRolesSelected()
+    {
+        $roles = Role::select('id', 'name')
+            ->whereIn('name', ['aprendiz', 'visitante', 'instructor', 'egresado'])
+            ->get();
+
+        if ($roles->isEmpty()) {
+            return [
+                "error" => false,
+                "code" => 200,
+                "message" => "No se encontraron los roles solicitados",
+                "data" => []
+            ];
+        }
+
+        return [
+            "error" => false,
+            "code" => 200,
+            "message" => "Roles obtenidos desde la base de datos",
+            "data" => $roles
+        ];
+    }
     public function getAllPermisos()
     {
         $permisos = Permission::all(['id', 'name']); // solo id y name
@@ -54,35 +76,34 @@ class RoleServices
         ];
     }
 
-    
+
     public function CreateRoles(array $data)
     {
         DB::beginTransaction();
-    
+
         try {
             // Crear el rol
             $role = Role::create([
                 'name' => $data['name'],
             ]);
-    
+
             // Asignar permisos (si vienen)
             if (!empty($data['permisos']) && is_array($data['permisos'])) {
                 $permisos = Permission::whereIn('id', $data['permisos'])->get();
                 $role->syncPermissions($permisos);
             }
-    
+
             DB::commit();
-    
+
             return [
                 'error' => false,
                 'code' => 201,
                 'message' => 'Rol creado con éxito',
                 'data' => $role->load('permissions'),
             ];
-    
         } catch (\Throwable $e) {
             DB::rollBack();
-    
+
             return [
                 'error' => true,
                 'code' => 500,
@@ -91,7 +112,7 @@ class RoleServices
             ];
         }
     }
-    
+
 
     public function updateRoles(array $data, $id)
     {
