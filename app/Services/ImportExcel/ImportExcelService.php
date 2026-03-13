@@ -15,8 +15,10 @@ class ImportExcelService
     public function importFile($file)
     {
         $errors = [];
+        $usuariosExistentes = [];
 
         try {
+
             $spreadsheet = IOFactory::load($file->getPathname());
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, false);
@@ -38,13 +40,35 @@ class ImportExcelService
 
                 try {
 
+                    // ================= DOCUMENTO =================
+                    $documento = isset($row['numero_documento']) ? trim((string)$row['numero_documento']) : '';
+
+                    if ($documento === '') {
+                        $errors[] = [
+                            'documento' => null,
+                            'error' => 'No se proporcionó número de documento'
+                        ];
+                        continue;
+                    }
+
+                    // ================= VERIFICAR SI YA EXISTE =================
+                    if (User::where('document', $documento)->exists()) {
+
+                        $usuariosExistentes[] = [
+                            'documento' => $documento,
+                            'mensaje' => "El usuario con documento {$documento} ya estaba registrado"
+                        ];
+
+                        continue;
+                    }
+
                     // ================= FICHA =================
                     $fichaExcel = isset($row['ficha']) ? trim((string)$row['ficha']) : '';
 
                     if ($fichaExcel === '') {
                         $errors[] = [
-                            'documento' => $row['numero_documento'] ?? null,
-                            'error'     => 'No se proporcionó ficha',
+                            'documento' => $documento,
+                            'error' => 'No se proporcionó ficha'
                         ];
                         continue;
                     }
@@ -57,8 +81,8 @@ class ImportExcelService
 
                     if (!$ficha) {
                         $errors[] = [
-                            'documento' => $row['numero_documento'] ?? null,
-                            'error'     => "La ficha {$fichaExcel} no existe",
+                            'documento' => $documento,
+                            'error' => "La ficha {$fichaExcel} no existe"
                         ];
                         continue;
                     }
@@ -68,70 +92,61 @@ class ImportExcelService
 
                     if ($tipoDocExcel === '') {
                         $errors[] = [
-                            'documento' => $row['numero_documento'] ?? null,
-                            'error'     => 'No se proporcionó tipo de documento',
+                            'documento' => $documento,
+                            'error' => 'No se proporcionó tipo de documento'
                         ];
                         continue;
                     }
 
-                    // Mapeo Excel → acrónimo BD
                     $mapaAcronimos = [
-                        'CC'        => 'CC',
-                        'TI'        => 'TI',
-                        'CE'        => 'CE',
-                        'PPT'       => 'PPT',
+                        'CC' => 'CC',
+                        'TI' => 'TI',
+                        'CE' => 'CE',
+                        'PPT' => 'PPT',
                         'PASAPORTE' => 'PA',
-                        'PAS'       => 'PA',
+                        'PAS' => 'PA'
                     ];
 
                     if (!isset($mapaAcronimos[$tipoDocExcel])) {
                         $errors[] = [
-                            'documento' => $row['numero_documento'] ?? null,
-                            'error'     => "Tipo de documento '{$tipoDocExcel}' no reconocido",
+                            'documento' => $documento,
+                            'error' => "Tipo de documento '{$tipoDocExcel}' no reconocido"
                         ];
                         continue;
                     }
 
                     $acronimoFinal = $mapaAcronimos[$tipoDocExcel];
 
-                    $documentType = TypeDocument::where('acronym', $acronimoFinal)->first();
+                    $documentType = typeDocument::where('acronym', $acronimoFinal)->first();
 
                     if (!$documentType) {
                         $errors[] = [
-                            'documento' => $row['numero_documento'] ?? null,
-                            'error'     => "El tipo con acrónimo '{$acronimoFinal}' no existe en BD",
-                        ];
-                        continue;
-                    }
-
-                    // ================= EVITAR DUPLICADOS =================
-                    if (User::where('document', $row['numero_documento'])->exists()) {
-                        $errors[] = [
-                            'documento' => $row['numero_documento'],
-                            'error'     => 'El usuario ya existe',
+                            'documento' => $documento,
+                            'error' => "El tipo con acrónimo '{$acronimoFinal}' no existe en BD"
                         ];
                         continue;
                     }
 
                     // ================= CREAR USUARIO =================
                     $user = User::create([
-                        'document'         => trim((string)$row['numero_documento']),
-                        'email'            => trim((string)$row['correo_electronico']),
-                        'password'         => bcrypt('12345678'),
-                        'status_id'        => 1,
-                        'document_type_id' => $documentType->id,
+                        'document' => $documento,
+                        'email' => trim((string)$row['correo_electronico']),
+                        'password' => bcrypt('12345678'),
+                        'status_id' => 1,
+                        'document_type_id' => $documentType->id
                     ]);
 
                     // ================= PERFIL =================
                     Profiles::create([
                         'usuario_id' => $user->id,
-                        'name'       => trim((string)$row['nombres']),
-                        'last_name'  => trim((string)$row['apellidos']),
-                        'phone'      => trim((string)$row['celular']),
+                        'name' => trim((string)$row['nombres']),
+                        'last_name' => trim((string)$row['apellidos']),
+                        'phone' => trim((string)$row['celular'])
                     ]);
 
                     // ================= ROL =================
                     $rol = Role::where('name', 'Aprendiz')->first();
+
                     if ($rol) {
                         $user->assignRole($rol->name);
                     }
@@ -139,39 +154,35 @@ class ImportExcelService
                     // ================= RELACIÓN FICHA =================
                     ficha_user::create([
                         'usuario_id' => $user->id,
-                        'ficha_id'   => $ficha->id,
+                        'ficha_id' => $ficha->id
                     ]);
 
                 } catch (\Throwable $e) {
+
                     $errors[] = [
                         'documento' => $row['numero_documento'] ?? null,
-                        'error'     => $e->getMessage(),
+                        'error' => $e->getMessage()
                     ];
                 }
             }
 
-            if (!empty($errors)) {
-                return [
-                    'error'   => true,
-                    'code'    => 206,
-                    'message' => count($errors) . ' registros fallaron',
-                    'errors'  => $errors,
-                ];
-            }
-
             return [
-                'error'   => false,
-                'code'    => 200,
-                'message' => 'Aprendices importados correctamente',
-                'data'    => [],
+                'error' => false,
+                'code' => 200,
+                'message' => 'Importación finalizada',
+                'data' => [
+                    'usuarios_existentes' => $usuariosExistentes,
+                    'errores' => $errors
+                ]
             ];
 
         } catch (\Throwable $e) {
+
             return [
-                'error'   => true,
-                'code'    => 500,
+                'error' => true,
+                'code' => 500,
                 'message' => 'Error al procesar el archivo',
-                'errors'  => [$e->getMessage()],
+                'errors' => [$e->getMessage()]
             ];
         }
     }

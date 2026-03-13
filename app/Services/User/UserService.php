@@ -251,51 +251,55 @@ class UserService
     
     public function getAllApprentices(array $filters = [], $perPage = 10)
     {
+        // Consulta principal con relaciones necesarias
         $query = User::with(['perfil', 'roles', 'status', 'fichas.programa'])
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Aprendiz');
             })
             ->orderBy('id');
-
+    
+        // FILTROS
         if (!empty($filters['nombre'])) {
             $query->whereHas('perfil', function ($q) use ($filters) {
                 $q->where('name', 'like', '%' . $filters['nombre'] . '%');
             });
         }
-
+    
         if (!empty($filters['apellido'])) {
             $query->whereHas('perfil', function ($q) use ($filters) {
                 $q->where('last_name', 'like', '%' . $filters['apellido'] . '%');
             });
         }
-
+    
         if (!empty($filters['documento'])) {
             $query->where('document', 'like', '%' . $filters['documento'] . '%');
         }
-
+    
         if (!empty($filters['estados'])) {
             $query->whereHas('status', function ($q) use ($filters) {
                 $q->where('name', $filters['estados']);
             });
         }
-
+    
         if (!empty($filters['ficha'])) {
-            $query->whereHas('ficha', function ($q) use ($filters) {
+            $query->whereHas('fichas', function ($q) use ($filters) {
                 $q->where('ficha', 'like', '%' . $filters['ficha'] . '%');
             });
         }
-
+    
         if (!empty($filters['programa'])) {
             $query->whereHas('fichas.programa', function ($q) use ($filters) {
                 $q->where('training_program', 'like', '%' . $filters['programa'] . '%');
             });
         }
-
-        $apprentices = $query->paginate($perPage); // PAGINACIÓN
-
+    
+        // PAGINACIÓN
+        $apprentices = $query->paginate($perPage);
+    
+        // MAPEAR RESULTADOS
         $records = $apprentices->map(function ($user) {
-            $ficha = $user->fichas->first();
-
+            $ficha = $user->fichas->first(); // toma la primera ficha
+    
             return [
                 'id' => $user->id,
                 'document' => $user->document,
@@ -309,7 +313,7 @@ class UserService
                 'estado' => $user->status->status ?? '',
             ];
         });
-
+    
         return [
             "error" => false,
             "code" => 200,

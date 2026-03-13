@@ -3,7 +3,6 @@
 namespace App\Services\Auth;
 
 use App\Enums\TokenAbility;
-use App\Models\Profiles\Profiles;
 use App\Models\User\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -48,7 +47,7 @@ class AuthServices
         }
 
         $perfil = $user->perfil->name;
-        $perfilApellido = $user->perfil->last_name; // Apellido
+        $perfilApellido = $user->perfil->last_name;
 
         $roleUser = $user->roles->first();
 
@@ -60,7 +59,7 @@ class AuthServices
         $cookieToken = cookie(
             'access_token',
             $accessToken,
-            60 * 24 * 365 * 100,
+            60 * 24 * 7,
             '/',
             null,
             false,
@@ -72,7 +71,7 @@ class AuthServices
         $cookieRefreshToken = cookie(
             'refresh_token',
             $refreshToken,
-            60 * 24 * 365 * 100,
+            60 * 24 * 7,
             '/',
             null,
             false,
@@ -88,7 +87,7 @@ class AuthServices
             "data" => [
                 'id' => $user->id,
                 'names' => $perfil,
-                'last_name' => $perfilApellido, // agregado
+                'last_name' => $perfilApellido,
                 'role_id' => $roleUser->id,
                 'permissions' => $permissions->pluck('name'),
                 'cookieToken' => $cookieToken,
@@ -101,7 +100,6 @@ class AuthServices
 
     private function generateAccessToken($user)
     {
-
         return $user->createToken(
             'accessToken',
             [TokenAbility::ACCESS_API->value],
@@ -111,7 +109,6 @@ class AuthServices
 
     private function generateRefreshToken($user)
     {
-
         return $user->createToken(
             'refreshToken',
             [TokenAbility::ISSUE_ACCESS_TOKEN->value],
@@ -132,7 +129,8 @@ class AuthServices
         }
 
         $user = $storedToken->tokenable;
-        if (!$user || $user->cannot('issue-access-token')) { // O chequea abilities
+
+        if (!$user || !$storedToken->can(TokenAbility::ISSUE_ACCESS_TOKEN->value)) {
             return [
                 "error" => true,
                 "code" => 403,
@@ -140,16 +138,18 @@ class AuthServices
             ];
         }
 
-        // Marca como usado
-        $storedToken->forceFill(['last_used_at' => now()])->save();
+        $storedToken->forceFill([
+            'last_used_at' => now()
+        ])->save();
 
         $accessToken = $this->generateAccessToken($user);
+
         $newRefreshToken = $this->renewRefreshToken($storedToken, $user) ?: $currentRefreshToken;
 
         $cookieToken = cookie(
             'access_token',
             $accessToken,
-            60 * 24 * 365 * 100,
+            60 * 24 * 7,
             '/',
             null,
             false,
@@ -161,7 +161,7 @@ class AuthServices
         $cookieRefreshToken = cookie(
             'refresh_token',
             $newRefreshToken,
-            60 * 24 * 365 * 100,
+            60 * 24 * 7,
             '/',
             null,
             false,
@@ -174,26 +174,26 @@ class AuthServices
             "error" => false,
             "code" => 200,
             "message" => "Tokens refrescados",
-            "data" => [
-                'cookieToken' => $cookieToken,
-                'cookieRefreshToken' => $cookieRefreshToken,
-            ]
+            "cookieToken" => $cookieToken,
+            "cookieRefreshToken" => $cookieRefreshToken
         ];
     }
 
     private function renewRefreshToken(PersonalAccessToken $storedToken, User $user)
     {
         if (!$storedToken->expires_at || $storedToken->expires_at->isPast()) {
+
             $storedToken->delete();
+
             return $user->createToken(
                 'refreshToken',
                 [TokenAbility::ISSUE_ACCESS_TOKEN->value],
-                now()->addMinutes(config('sanctum.refresh_token_expiration', 10080)) // 7 días default
+                now()->addMinutes(config('sanctum.refresh_token_expiration', 10080))
             )->plainTextToken;
         }
+
         return null;
     }
-
 
     public function createExpiredCookies()
     {
@@ -226,7 +226,6 @@ class AuthServices
             'expiredRefreshToken' => $expiredRefreshToken,
         ];
     }
-
 
     public function logOut(User $user)
     {

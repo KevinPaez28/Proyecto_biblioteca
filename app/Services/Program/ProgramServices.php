@@ -35,52 +35,51 @@ class ProgramServices
     }
 
     public function getProgramByInformation(array $filters = [], $perPage = 10)
-{
-    try {
+    {
+        try {
 
-        $query = Program::query()->orderBy('id');
+            $query = Program::query()->orderBy('id');
 
-        // filtro por nombre del programa
-        if (!empty($filters['nombre'])) {
-            $query->where('training_program', 'like', '%' . $filters['nombre'] . '%');
-        }
+            // filtro por nombre del programa
+            if (!empty($filters['nombre'])) {
+                $query->where('training_program', 'like', '%' . $filters['nombre'] . '%');
+            }
 
-        $programs = $query->paginate($perPage);
+            $programs = $query->paginate($perPage);
 
-        $records = $programs->map(function ($program) {
+            $records = $programs->map(function ($program) {
+                return [
+                    'id' => $program->id,
+                    'training_program' => $program->training_program,
+                ];
+            });
+
             return [
-                'id' => $program->id,
-                'training_program' => $program->training_program,
-            ];
-        });
-
-        return [
-            "error" => false,
-            "code" => 200,
-            "message" => $programs->isEmpty()
-                ? "No hay programas registrados"
-                : "Programas obtenidos con éxito",
-            "data" => [
-                "records" => $records,
-                "meta" => [
-                    "current_page" => $programs->currentPage(),
-                    "last_page" => $programs->lastPage(),
-                    "per_page" => $programs->perPage(),
-                    "total" => $programs->total(),
+                "error" => false,
+                "code" => 200,
+                "message" => $programs->isEmpty()
+                    ? "No hay programas registrados"
+                    : "Programas obtenidos con éxito",
+                "data" => [
+                    "records" => $records,
+                    "meta" => [
+                        "current_page" => $programs->currentPage(),
+                        "last_page" => $programs->lastPage(),
+                        "per_page" => $programs->perPage(),
+                        "total" => $programs->total(),
+                    ]
                 ]
-            ]
-        ];
+            ];
+        } catch (Exception $e) {
 
-    } catch (Exception $e) {
-
-        return [
-            "error" => true,
-            "code" => 500,
-            "message" => "Error al obtener programas",
-            "errors" => [$e->getMessage()]
-        ];
+            return [
+                "error" => true,
+                "code" => 500,
+                "message" => "Error al obtener programas",
+                "errors" => [$e->getMessage()]
+            ];
+        }
     }
-}
     public function CreatePrograma(array $data)
     {
         $programa = Program::Create([

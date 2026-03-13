@@ -111,6 +111,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // --------- FICHAS ----------
     Route::prefix('ficha')->group(function () {
+        Route::get('/search', [FichaController::class, 'getByInformation']);
         Route::post('/create', [FichaController::class, 'create'])->middleware('permission:fichas.store');
         Route::patch('/{id}', [FichaController::class, 'update'])->middleware('permission:fichas.update');
         Route::delete('/delete/{id}', [FichaController::class, 'delete'])->middleware('permission:fichas.destroy');

@@ -43,6 +43,74 @@ class FichaServices
         ];
     }
 
+    public function getFichasByInformation(array $filters = [], $perPage = 10)
+    {
+        try {
+
+            // Query base con relación programa
+            $query = Ficha::with('programa')->orderBy('id');
+
+            // ==========================
+            // FILTRO POR BUSQUEDA
+            // ==========================
+            if (!empty($filters['search'])) {
+
+                $search = $filters['search'];
+
+                $query->where(function ($q) use ($search) {
+
+                    // buscar por número de ficha
+                    $q->where('ficha', 'like', "%{$search}%")
+
+                        // buscar por nombre del programa
+                        ->orWhereHas('programa', function ($p) use ($search) {
+                            $p->where('training_program', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            // paginación
+            $fichas = $query->paginate($perPage);
+
+            // transformación de datos
+            $records = $fichas->map(function ($ficha) {
+                return [
+                    'id' => $ficha->id,
+                    'ficha' => $ficha->ficha,
+                    'programa' => [
+                        'id' => $ficha->programa?->id,
+                        'training_program' => $ficha->programa?->training_program
+                    ]
+                ];
+            });
+
+            return [
+                "error" => false,
+                "code" => 200,
+                "message" => $fichas->isEmpty()
+                    ? "No hay fichas registradas"
+                    : "Fichas obtenidas con éxito",
+                "data" => [
+                    "records" => $records,
+                    "meta" => [
+                        "current_page" => $fichas->currentPage(),
+                        "last_page" => $fichas->lastPage(),
+                        "per_page" => $fichas->perPage(),
+                        "total" => $fichas->total(),
+                    ]
+                ]
+            ];
+        } catch (Exception $e) {
+
+            return [
+                "error" => true,
+                "code" => 500,
+                "message" => "Error al obtener fichas",
+                "errors" => [$e->getMessage()]
+            ];
+        }
+    }
+
     public function updateFicha(array $data, $id)
     {
         try {

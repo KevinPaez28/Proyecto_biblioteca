@@ -43,6 +43,29 @@ class FichaController extends Controller
         return ResponseFormatter::success($response['message'], $response['code'], $response['data'] ?? []);
     }
 
+    public function getByInformation(Request $request)
+    {
+        // obtenemos los filtros desde el request
+        $filters = $request->only([
+            'search'
+        ]);
+
+        $response = $this->FichaServices->getFichasByInformation($filters);
+
+        if ($response['error']) {
+            return ResponseFormatter::error(
+                $response['message'],
+                $response['code']
+            );
+        }
+
+        return ResponseFormatter::success(
+            $response['message'],
+            $response['code'],
+            $response['data'] ?? []
+        );
+    }
+
     /**
      * Crea una nueva ficha de formación.
      * * @param createFicha $request FormRequest con las reglas de validación de campos.
