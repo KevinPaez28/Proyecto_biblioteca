@@ -15,7 +15,7 @@ class ProgramServices
 {
     public function getProgramas()
     {
-        $program = Program::all();
+        $program = Program::orderBy('training_program', 'asc')->get();
 
         if (count($program) == 0)
             return [
@@ -25,7 +25,6 @@ class ProgramServices
                 "data" => $program
             ];
 
-
         return [
             "error" => false,
             "code" => 200,
@@ -33,7 +32,6 @@ class ProgramServices
             "data" => $program
         ];
     }
-
     public function getProgramByInformation(array $filters = [], $perPage = 10)
     {
         try {
